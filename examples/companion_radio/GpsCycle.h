@@ -73,6 +73,7 @@
 #include <Arduino.h>
 #include <helpers/SensorManager.h>
 #include "NodePrefs.h"
+#include "GpsPosition.h"   // v2.3: plausibility check of the position
 
 class GpsCycle {
 public:
@@ -640,9 +641,13 @@ private:
     uint32_t ts = (uint32_t)loc->getTimestamp();
     if (ts == _last_ts) return false;   // nothing newly parsed since the last accepted fix
     _last_ts = ts;
+    // v2.3: a "fix" from a broken sentence (position outside +-90/+-180 degrees) is no fix
+    long lat = loc->getLatitude();
+    long lon = loc->getLongitude();
+    if (!fmGpsPositionInRange(lat, lon)) return false;
     _last_fix_ms = now;
-    _lat = loc->getLatitude();
-    _lon = loc->getLongitude();
+    _lat = lat;
+    _lon = lon;
     long sats = loc->satellitesCount();
     _sats = (sats < 0) ? 0 : (sats > 255 ? 255 : (uint8_t)sats);
     _have_fix = true;
