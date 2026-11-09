@@ -243,5 +243,57 @@
    "referrer": "fieldmesh-radio.github.io",
    "uniques": 1
   }
+ ],
+ "2026-11-09": [
+  {
+   "count": 56,
+   "referrer": "github.com",
+   "uniques": 15
+  },
+  {
+   "count": 51,
+   "referrer": "aocr.org",
+   "uniques": 51
+  },
+  {
+   "count": 19,
+   "referrer": "reddit.com",
+   "uniques": 13
+  },
+  {
+   "count": 16,
+   "referrer": "Google",
+   "uniques": 11
+  },
+  {
+   "count": 12,
+   "referrer": "com.reddit.frontpage",
+   "uniques": 9
+  },
+  {
+   "count": 2,
+   "referrer": "tobiasguertler.de",
+   "uniques": 2
+  },
+  {
+   "count": 2,
+   "referrer": "togerix-hub.github.io",
+   "uniques": 2
+  },
+  {
+   "count": 2,
+   "referrer": "org.telegram.messenger",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "DuckDuckGo",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "fieldmesh-radio.github.io",
+   "uniques": 1
+  }
  ]
 }
