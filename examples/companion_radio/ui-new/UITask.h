@@ -78,6 +78,7 @@ class UITask : public AbstractUITask {
   static const int ONLINE_CACHE_SIZE = 16;
   OnlineNode _online_nodes[ONLINE_CACHE_SIZE];
   unsigned long ui_started_at, next_batt_chck;
+  uint8_t _low_batt_count;   // v2.3: consecutive readings below AUTO_SHUTDOWN_MILLIVOLTS
   int next_backlight_btn_check = 0;
 #ifdef DISP_BACKLIGHT
   bool _backlight_on = false;           // aktueller Backlight-Zustand
@@ -124,6 +125,7 @@ public:
 
   UITask(mesh::MainBoard* board, MultiSerialInterface* serial) : AbstractUITask(board, serial), _display(NULL), _sensors(NULL) {
     next_batt_chck = _next_refresh = 0;
+    _low_batt_count = 0;
     _msgcount = 0;
     ui_started_at = 0;
     curr = NULL;

@@ -12,6 +12,9 @@
 #ifndef AUTO_OFF_MILLIS
   #define AUTO_OFF_MILLIS     15000   // 15 seconds
 #endif
+#ifndef AUTO_SHUTDOWN_LOW_READINGS
+  #define AUTO_SHUTDOWN_LOW_READINGS  3   // v2.3: low readings in a row before auto shutdown
+#endif
 #define BOOT_SCREEN_MILLIS   3000   // 3 seconds
 
 #ifdef PIN_STATUS_LED
@@ -2639,10 +2642,14 @@ void UITask::loop() {
 #ifdef AUTO_SHUTDOWN_MILLIVOLTS
   if (millis() > next_batt_chck) {
     uint16_t milliVolts = getBattMilliVolts();
-    if (milliVolts > 0 && milliVolts < AUTO_SHUTDOWN_MILLIVOLTS) {
-      // V6 (upstream): never shut down while externally powered; alert shown on all displays,
+    // v2.3: shut down only after AUTO_SHUTDOWN_LOW_READINGS low readings in a row (one every
+    // 8 s), so a single reading during a TX current spike does not switch the device off
+    // (idea from upstream PR #3462)
+    if (milliVolts > 0 && milliVolts < AUTO_SHUTDOWN_MILLIVOLTS && !board.isExternalPowered()) {
+      if (_low_batt_count < 255) _low_batt_count++;
+      // V6 (upstream): never shut down while externally powered (checked above); alert shown on all displays,
       // non-eink displays keep it visible for 3s before power-off
-      if(!board.isExternalPowered()) {
+      if (_low_batt_count >= AUTO_SHUTDOWN_LOW_READINGS) {
         if (_display != NULL) {
           _display->startFrame();
           _display->setTextSize(2);
@@ -2654,6 +2661,8 @@ void UITask::loop() {
         }
         shutdown();
       }
+    } else {
+      _low_batt_count = 0;
     }
     next_batt_chck = millis() + 8000;
   }
