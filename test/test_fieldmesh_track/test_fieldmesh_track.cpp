@@ -139,8 +139,8 @@ TEST(FieldMeshTrack, DistanceApproximation) {
   // 0.001 deg longitude at 48.8 deg N = 73.3 m
   EXPECT_NEAR(73, TrackScheduler::distanceM(LAT, LON, LAT, LON + 1000), 1);
   // ~15 km diagonal: within 0.5 % of the haversine distance
-  EXPECT_NEAR(haversineM(LAT, LON, 48710600, 9006100),
-              TrackScheduler::distanceM(LAT, LON, 48710600, 9006100), 75);
+  EXPECT_NEAR(haversineM(LAT, LON, 48841000, 9359700),
+              TrackScheduler::distanceM(LAT, LON, 48841000, 9359700), 75);
   // far away: clamped to the uint16_t range
   EXPECT_EQ(65535, TrackScheduler::distanceM(LAT, LON, LAT + 1000000, LON));
 }

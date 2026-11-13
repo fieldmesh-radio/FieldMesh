@@ -74,7 +74,7 @@ public:
 // prefs as they look while Off-Grid is active: radio on the Off-Grid channel,
 // the user's normal parameters (EU/UK Narrow preset) parked in "fm"
 void fillOffGridPrefs(NodePrefs& p) {
-  strcpy(p.node_name, "Tobi | M1");
+  strcpy(p.node_name, "Alex | M1");
   p.freq = 869.4625f;
   p.bw = 125.0f;
   p.sf = 11;
@@ -119,7 +119,7 @@ TEST(FieldMeshPrefs, NormalRadioParamsSurviveSaveAndLoad) {
   EXPECT_FLOAT_EQ(125.0f, loaded.bw);
   EXPECT_EQ(11, loaded.sf);
   EXPECT_EQ(5, loaded.cr);
-  EXPECT_STREQ("Tobi | M1", loaded.node_name);
+  EXPECT_STREQ("Alex | M1", loaded.node_name);
 }
 
 TEST(FieldMeshPrefs, CommonPresetFrequenciesKeepTheirPrecision) {
@@ -166,7 +166,7 @@ TEST(FieldMeshPrefs, StockMeshCoreFileWithoutFmLoadsWithDefaults) {
   ReplayStream in(json);
   ASSERT_TRUE(loaded.loadSerial(in));
 
-  EXPECT_STREQ("Tobi | M1", loaded.node_name);
+  EXPECT_STREQ("Alex | M1", loaded.node_name);
   EXPECT_FLOAT_EQ(869.4625f, loaded.freq);
   EXPECT_EQ(0.0f, loaded.normal_freq);   // 0 = "nothing saved", Off-Grid saves fresh values
   EXPECT_EQ(0.0f, loaded.normal_bw);

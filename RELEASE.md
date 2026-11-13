@@ -86,7 +86,7 @@ Still based on MeshCore v1.18.0. One firmware file per device for all regions.
 - **ThinkNode M1 GPS switch** — the GPS runs only when the hardware switch and the setting are on; switching it on also turns the setting on
 - **Off-Grid region chosen automatically** — below 900 MHz → 869.4625 MHz (EU/UK), 900 MHz and above → 916.4625 MHz (US/AU). The alert shows the region ("Off-Grid: ON (EU)"). No separate US firmware any more
 - **Identity backup** — node identity and settings are copied to a second file system (QSPI flash on M1, L1, X1; a separate internal flash area on the T1000-E) and restored automatically if the main copy is lost. Protects against the identity reset some users saw when updating to 2.0.0. A factory reset also clears the backup
-- **SOS with battery level** — `!SOS 48.7636,9.1621 bat78%` / `!SOS no GPS bat78%`
+- **SOS with battery level** — `!SOS 48.7758,9.1829 bat78%` / `!SOS no GPS bat78%`
 - **FieldMesh Repeater for the Station G2** — a normal MeshCore repeater with:
   - **Off-Grid switch** (`set offgrid on|off`, G2 menu, dashboard), applied live without a reboot
   - **Message board** — room server as a second identity next to the repeater (`set roomserver <name>`), posts and users survive a restart
@@ -192,7 +192,7 @@ FieldMesh now runs on MeshCore v1.18.0 (previously v1.15.0). All FieldMesh featu
 - **Stale favourite info after app disconnect** — `_latest_fav_name` and `_latest_fav_time` are now reset on app sync, preventing old contact info from reappearing on HomeScreen after disconnect
 - **Double-counting nodes in online counter** — A node heard via both an advert and a message was counted twice; fixed with `countOnlineNodesExcluding()`, which only counts message-cache entries not already present in the fresh advert list
 - **Channel message title bar showed sender name redundantly** — For channel messages, the sender name was shown both in the title bar and in the message body; the title bar now shows only the channel name for channel messages and `[DM] NodeName` for direct messages
-- **Favourite detection broken for nodes with `|` in name** — Node names containing ` | ` (e.g. `Juno48 | DE.BW`) caused incorrect short-name extraction, so channel messages from such nodes were never recognised as favourites; fixed by using `": "` as the separator (consistent with MeshCore channel format `NodeName: text`)
+- **Favourite detection broken for nodes with `|` in name** — Node names containing ` | ` (e.g. `Alice | DE.BW`) caused incorrect short-name extraction, so channel messages from such nodes were never recognised as favourites; fixed by using `": "` as the separator (consistent with MeshCore channel format `NodeName: text`)
 - **BLE initialization handshake flood fixed** — After `onSecured()`, async pushes (`MSG_WAITING`, `PATH_UPDATED`) fired freely before `CMD_APP_START` arrived, filling all 12 `send_queue` slots and causing `RESP_SELF_INFO` to be silently dropped (app timeout); fixed by introducing `_app_initialized` flag gating all async pushes, plus `isWriteBusy()` guard on `MSG_WAITING` pushes
 - **Adaptive row limits on RECENT and TRACKING pages** — Both pages now use a `max_y` variable based on `display.height()` instead of hardcoded pixel values
 ---

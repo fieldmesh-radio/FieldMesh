@@ -225,7 +225,7 @@ Normal operation (Off-Grid off) is unchanged. Devices with v2.1 or stock MeshCor
 On the SOS page, a long press opens a two-step confirmation screen (protection against accidental triggering). On the T1000-E: click once, then press again and hold for 5 seconds (v2.2, see [T1000-E](#t1000-e-no-display)). FieldMesh sends to the channel whose name contains "sos" (case-insensitive, e.g. `#sos`) — set one up in the MeshCore app first. The message carries your position and battery level:
 
 ```
-!SOS 48.7636,9.1621 bat78%
+!SOS 48.7758,9.1829 bat78%
 !SOS no GPS bat78%
 ```
 
