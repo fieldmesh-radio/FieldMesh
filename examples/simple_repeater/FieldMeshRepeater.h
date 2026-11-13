@@ -11,9 +11,9 @@
 #include <Mesh.h>
 #include <helpers/ConfigSerializer.h>
 #include "../companion_radio/OffGrid.h"   // shared Off-Grid parameters (EU/US chosen from the normal frequency)
-#include "../companion_radio/FloodPolicy.h"   // shared Off-Grid managed flooding rules (v2.2)
+#include "../companion_radio/FloodPolicy.h"   // shared Off-Grid managed flooding rules
 #include "../companion_radio/FloodLog.h"      // flooding diagnostics (only with -D FM_FLOOD_LOG=1)
-#include "../companion_radio/FieldMeshVersion.h"   // FIELDMESH_VERSION, fmAppVersion() (#17)
+#include "../companion_radio/FieldMeshVersion.h"   // FIELDMESH_VERSION, fmAppVersion()
 
 #define FM_REPEATER_PREFS_FILE  "/fm_repeater.json"
 #define FM_ROOM_IDENTITY_NAME   "fm_room"     // second identity (IdentityStore, next to "_main")
@@ -37,7 +37,7 @@ struct FmRoomPrivate {
   FmRoomPost post;
 };
 
-// Channels the box listens to (P4). A channel with "sos" in its name is an SOS channel.
+// Channels the box listens to. A channel with "sos" in its name is an SOS channel.
 #define FM_CHANNELS_FILE        "/fm_channels"
 #define FM_MAX_CHANNELS         8
 #define FM_CHANNEL_KEY_LEN      16                   // 128-bit channel key (hashtag and private channels)
@@ -49,12 +49,12 @@ struct FmChannel {
 #define FM_MAX_SOS              8                    // last SOS heard (for 'get sos' and the dashboard)
 struct FmSosEntry {
   char sender[32];
-  char info[64];               // e.g. "48.7636,9.1621 bat78%"
+  char info[64];               // e.g. "48.7758,9.1829 bat78%"
   uint32_t heard_at;           // by OUR clock
   unsigned long heard_millis;  // 0 = empty
 };
 
-// ---- dashboard data (P5b, FieldMeshStats.cpp) ----
+// ---- dashboard data (FieldMeshStats.cpp) ----
 #define FM_MAX_NODES            300                  // nodes heard (adverts); PSRAM, oldest non-team node replaced
 #define FM_MAX_NODES_NO_PSRAM   60
 struct FmNode {
@@ -96,14 +96,14 @@ struct FmFeedEntry {
 #define FM_CLOCK_FILE           "/fm_clock"          // clock high-water mark (no battery-backed clock on the G2)
 #define FM_CLOCK_SAVE_INTERVAL  300000               // 5 min
 
-// ---- weather (P5f, FieldMeshWeather.cpp) ----
+// ---- weather (FieldMeshWeather.cpp) ----
 // The box has no internet: a phone in the dashboard WiFi that has mobile data fetches the
 // forecast for the box position (Open-Meteo) and hands it over. '!wetter' builds a short
 // German text from it. Only one place, the next 48 hours.
 #define FM_WX_FILE              "/fm_weather"
 #include "FieldMeshWeatherText.h"            // FmWx, FM_WX_HOURS, FM_WX_REFRESH_S, text rules
 
-// ---- sun times + time zone (2.3, FieldMeshSun.cpp) ----
+// ---- sun times + time zone (FieldMeshSun.cpp) ----
 // '!sonne' / '!sun' in the room: sunrise, sunset, daylight until, offline from the box
 // position. Local time from the POSIX rule in "tz", set by every phone that opens the
 // dashboard (derived from the browser) or on the setup page.

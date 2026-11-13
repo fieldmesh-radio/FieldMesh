@@ -1,6 +1,6 @@
 #pragma once
 
-// FieldMesh v2.3: plausibility check for a GPS position (degrees * 1e6, LocationProvider format).
+// FieldMesh: plausibility check for a GPS position (degrees * 1e6, LocationProvider format).
 //
 // MicroNMEA can report a fix whose position did not parse: a checksum-valid sentence with a
 // field missing (e.g. RMC without the N/S hemisphere) still sets the fix flag while the

@@ -36,14 +36,14 @@ class UITask : public AbstractUITask {
   int _msgcount;
   bool _need_refresh = true;
   bool _displayWasOn = false;  // Track display state before button press
-  bool _sos_active = false;            // V5: SOS alarm active (siren loops until short press)
-  bool _buzzer_restore_quiet = false;  // V5: restore quiet state after forced tone playback
-  bool _sos_holding = false;           // v2.2: click + hold SOS countdown running
-  unsigned long _sos_hold_start = 0;   // v2.2: countdown start
-  unsigned long _sos_last_beep = 0;    // v2.2: last countdown beep (LED blinks with it)
-  unsigned long _sos_next_beep = 0;    // v2.2: next countdown beep
-  unsigned long _sos_fail_at = 0;      // v2.3: no SOS channel - X1 red double blink from here
-  unsigned long _sos_vib_at = 0;       // v2.3: last forced vibration (received SOS repeats it)
+  bool _sos_active = false;            // SOS alarm active (siren loops until short press)
+  bool _buzzer_restore_quiet = false;  // restore quiet state after forced tone playback
+  bool _sos_holding = false;           // click + hold SOS countdown running
+  unsigned long _sos_hold_start = 0;   // countdown start
+  unsigned long _sos_last_beep = 0;    // last countdown beep (LED blinks with it)
+  unsigned long _sos_next_beep = 0;    // next countdown beep
+  unsigned long _sos_fail_at = 0;      // no SOS channel - X1 red double blink from here
+  unsigned long _sos_vib_at = 0;       // last forced vibration (received SOS repeats it)
   unsigned long ui_started_at;
 
   // Button handlers
@@ -64,13 +64,13 @@ class UITask : public AbstractUITask {
   void handleButtonDoublePress();
   void handleButtonTriplePress();
   void handleButtonQuadruplePress();
-  void handleButtonQuintuplePress();  // V2.02: Off-Grid Toggle
+  void handleButtonQuintuplePress();  // Off-Grid Toggle
   void handleButtonLongPress();
-  void handleButtonClickHoldStart();  // v2.2: click + hold = SOS countdown
-  void handleButtonClickHoldEnd();    // v2.2: released before the end = cancel
-  void sosCountdownLoop();            // v2.2
-  void playForced(const char* melody);  // v2.2: tone even while the buzzer is quiet
-  void vibrateForced();                 // v2.3: vibration even while it is off (no-op without motor)
+  void handleButtonClickHoldStart();  // click + hold = SOS countdown
+  void handleButtonClickHoldEnd();    // released before the end = cancel
+  void sosCountdownLoop();
+  void playForced(const char* melody);  // tone even while the buzzer is quiet
+  void vibrateForced();                 // vibration even while it is off (no-op without motor)
 
  
 public:
@@ -93,7 +93,7 @@ public:
   // from AbstractUITask
   void notify(UIEventType t = UIEventType::none) override;
   void loop() override;
-  void triggerSOS(const char* from, const char* text);  // V5: SOS alarm via buzzer
+  void triggerSOS(const char* from, const char* text);  // SOS alarm via buzzer
 
   void shutdown(bool restart = false);
 };

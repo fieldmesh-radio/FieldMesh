@@ -1,8 +1,8 @@
 #include "UITask.h"
 #include <helpers/TxtDataHelpers.h>
 #include "../MyMesh.h"
-#include "../OffGrid.h"   // FieldMesh v2.1: Off-Grid region label
-#include "../FieldMeshVersion.h"   // FieldMesh v2.2 (#17): version on the splash screen
+#include "../OffGrid.h"   // FieldMesh: Off-Grid region label
+#include "../FieldMeshVersion.h"   // FieldMesh: version on the splash screen
 #include "target.h"
 #include <time.h>
 #ifdef ENABLE_WIFI_INTERFACE
@@ -13,7 +13,7 @@
   #define AUTO_OFF_MILLIS     15000   // 15 seconds
 #endif
 #ifndef AUTO_SHUTDOWN_LOW_READINGS
-  #define AUTO_SHUTDOWN_LOW_READINGS  3   // v2.3: low readings in a row before auto shutdown
+  #define AUTO_SHUTDOWN_LOW_READINGS  3   // low readings in a row before auto shutdown
 #endif
 #define BOOT_SCREEN_MILLIS   3000   // 3 seconds
 
@@ -25,7 +25,7 @@
 
 #define LONG_PRESS_MILLIS   1200
 
-// V5.03: KEY_BACK — physischer Back-Knopf am L1 (back_btn, einfacher Druck).
+// KEY_BACK - physical back button on the L1 (back_btn, single press).
 // Value '\x10' does not collide with any known MeshCore KEY_* value.
 #define KEY_BACK  '\x10'
 
@@ -42,15 +42,15 @@
 
 #include "icons.h"
 
-// Formatiert vergangene Zeit als relativen String: "5s", "3m", "2h"
-// Identical to the V4 pattern (MsgPreviewScreen, RECENT, TRACKING).
+// Formats elapsed time as a relative string: "5s", "3m", "2h"
+// Same format on all screens (message history, RECENT, TRACKING).
 static void formatRelTime(char* buf, size_t buf_size, uint32_t now, uint32_t then) {
   uint32_t secs = (now >= then) ? (now - then) : 0;
   if (secs < 60)        snprintf(buf, buf_size, "%us", secs);
   else if (secs < 3600) snprintf(buf, buf_size, "%um", secs / 60);
   else                  snprintf(buf, buf_size, "%uh", secs / 3600);
 }
-// V6 (#23): shift a stored RTC timestamp after a clock correction (0 = unset, left as is)
+// (issue #23) shift a stored RTC timestamp after a clock correction (0 = unset, left as is)
 static void shiftTimestamp(uint32_t& ts, int32_t delta_secs) {
   if (ts == 0) return;
   int64_t v = (int64_t)ts + delta_secs;
@@ -58,9 +58,9 @@ static void shiftTimestamp(uint32_t& ts, int32_t delta_secs) {
 }
 
 static float calcDistance(double lat1, double lon1, double lat2, double lon2) {
-  if (lat1 == 0.0 && lon1 == 0.0) return -1.0f;  // eigene Position unbekannt
-  if (lat2 == 0.0 && lon2 == 0.0) return -1.0f;  // andere Position unbekannt
-  const float R = 6371000.0f;  // Erdradius in Metern
+  if (lat1 == 0.0 && lon1 == 0.0) return -1.0f;  // own position unknown
+  if (lat2 == 0.0 && lon2 == 0.0) return -1.0f;  // other position unknown
+  const float R = 6371000.0f;  // earth radius in metres
   float dLat = (lat2 - lat1) * (M_PI / 180.0f);
   float dLon = (lon2 - lon1) * (M_PI / 180.0f);
   float a = sinf(dLat/2) * sinf(dLat/2) +
@@ -93,7 +93,7 @@ public:
   int render(DisplayDriver& display) override {
     if (display.height() >= 128) {
       // ── Large display (M1/M5, 200px) — two-group layout ─────────────
-      // Gruppe oben: Logo + Version + Datum
+      // upper group: logo + version + date
       int logoWidth = 128;
       display.setColor(UIColor::primary_txt);
       display.drawXbm((display.width() - logoWidth) / 2, 4, meshcore_logo, logoWidth, 13);
@@ -107,23 +107,23 @@ public:
 
       // Intentional gap in the middle (42..110)
 
-      // Gruppe unten: "FieldMesh" dominant + "v3" direkt darunter
+      // lower group: "FieldMesh" large, the version right below
       display.setTextSize(3);
       display.setColor(UIColor::primary_txt);
       display.drawTextCentered(display.width() / 2, display.height() - 42, "FieldMesh");
 
-      // FieldMesh version (#17), set by the release workflow; long test/dev names in small text
+      // FieldMesh version, set by the release workflow; long test/dev names in small text
       display.setTextSize(2);
       display.setColor(UIColor::primary_txt);
       if (display.getTextWidth(FIELDMESH_VERSION) > display.width()) display.setTextSize(1);
       display.drawTextCentered(display.width() / 2, display.height() - 20, FIELDMESH_VERSION);
     } else {
-      // ── Kleines Display (L1/Heltec V3/Techo, 64/80px) — Upstream v1.18 Layout ─
+      // ── Small display (L1/Heltec V3/T-Echo, 64/80px) — upstream layout ───────
       int logoWidth = 128;
       display.setColor(UIColor::corp_blue);
       display.drawXbm((display.width() - logoWidth) / 2, 3, meshcore_logo, logoWidth, 13);
 
-      // FieldMesh version (#17) instead of the meshcore website; only the version if too wide
+      // FieldMesh version instead of the meshcore website; only the version if too wide
       char fm_line[40];
       snprintf(fm_line, sizeof(fm_line), "FieldMesh %s", FIELDMESH_VERSION);
       display.setColor(UIColor::primary_txt);
@@ -166,9 +166,9 @@ class HomeScreen : public UIScreen {
     SENSORS,
 #endif
 #if UI_DISCOVER_SCREEN
-    DISCOVERY,  // V6: upstream repeater discovery page
+    DISCOVERY,  // upstream repeater discovery page
 #endif
-    SOS,     // V3: SOS page (after GPS, before count)
+    SOS,     // SOS page (after GPS, before count)
     Count    // keep as last
   };
 
@@ -456,7 +456,7 @@ public:
       }
 
       #ifdef UI_SHOW_CLOCK
-      // V6: upstream clock (build flag, off by default on M1/L1) — large displays only
+      // upstream clock (build flag, off by default on M1/L1) — large displays only
       if (display.height() >= 128) {
         display.setTextSize(3);
         uint32_t now = _rtc->getCurrentTime();
@@ -518,7 +518,7 @@ public:
       the_mesh.getRecentlyHeard(recent, UI_RECENT_LIST_SIZE);
       display.setColor(UIColor::primary_txt);
       display.setTextSize(1);
-      // v2.1: own position = fresh fix (<= 2 min) from the GPS duty cycle
+      // own position = fresh fix (<= 2 min) from the GPS duty cycle
       GpsCycle& gps = the_mesh.gpsCycle();
       bool own_gps = gps.hasFreshFix();
       double own_lat = gps.latitude() / 1000000.0;
@@ -531,7 +531,7 @@ public:
         auto a = &recent[i];
         if (a->name[0] == 0) continue;
 
-        // Nur Favoriten anzeigen (flags LSB = 1 -> Favorit)
+        // show favourites only (flags LSB = 1 -> favourite)
         ContactInfo* ci = the_mesh.lookupContactByPubKey(a->pubkey_prefix, sizeof(a->pubkey_prefix));
         if (ci == NULL || !(ci->flags & 0x01)) continue;
 
@@ -539,7 +539,7 @@ public:
         if (!a->has_gps) continue;
 
         char time_buf[8];
-        int secs = _rtc->getCurrentTime() - a->gps_timestamp;  // Zeit seit letztem GPS-Advert
+        int secs = _rtc->getCurrentTime() - a->gps_timestamp;  // time since the last GPS advert
         if (secs < 60)        sprintf(time_buf, "%ds", secs);
         else if (secs < 3600) sprintf(time_buf, "%dm", secs / 60);
         else                  sprintf(time_buf, "%dh", secs / 3600);
@@ -590,7 +590,7 @@ public:
       display.print(tmp);
 
       // tx power,  noise floor
-      // v2.2 Off-Grid flooding: relays skipped because another node relayed the advert first
+      // Off-Grid flooding: relays skipped because another node relayed the advert first
       bool fm_offgrid = the_mesh.isOffGridActive();
       bool fm_large = display.height() >= 128;
       display.setCursor(0, 42);
@@ -737,7 +737,7 @@ public:
 #endif
 #if UI_DISCOVER_SCREEN
     } else if (_page == HomePage::DISCOVERY) {
-      // V6: upstream repeater discovery page
+      // upstream repeater discovery page
       int count = disc_nodes_count;
       display.setColor(UIColor::primary_txt);
       display.setTextSize(1);
@@ -772,7 +772,7 @@ public:
       }
 #endif
     } else if (_page == HomePage::SOS) {
-      // V3: SOS page — icon + hint for long press
+      // SOS page — icon + hint for long press
       if (display.height() >= 128) {
         // Large display: "SOS" + icon in upper half
         // Icon at same position as SOSSendScreen (display.height()/2 - 24)
@@ -815,7 +815,7 @@ public:
       return true;
     }
 #if UI_HAS_JOYSTICK
-    // V5: L1 — short joystick press on FIRST page opens MsgFilterScreen
+    // L1 — short joystick press on FIRST page opens MsgFilterScreen
     if (c == KEY_ENTER && _page == HomePage::FIRST) {
       _task->gotoMsgFilter();
       return true;
@@ -850,23 +850,23 @@ public:
   }
 
 #if UI_DISCOVER_SCREEN
-  bool isOnDiscoveryPage() const { return _page == HomePage::DISCOVERY; }  // V6
+  bool isOnDiscoveryPage() const { return _page == HomePage::DISCOVERY; }
 #else
   bool isOnDiscoveryPage() const { return false; }
 #endif
   bool isOnRecentPage()   const { return _page == HomePage::RECENT; }
   bool isOnTrackingPage() const { return _page == HomePage::TRACKING; }
 #if ENV_INCLUDE_GPS == 1
-  bool isOnGpsPage()      const { return _page == HomePage::GPS; }       // v2.1
+  bool isOnGpsPage()      const { return _page == HomePage::GPS; }
 #else
   bool isOnGpsPage()      const { return false; }
 #endif
-  bool isOnSOSPage()      const { return _page == HomePage::SOS; }       // V3
-  bool isOnFirstPage()    const { return _page == HomePage::FIRST; }     // V5: E6
+  bool isOnSOSPage()      const { return _page == HomePage::SOS; }
+  bool isOnFirstPage()    const { return _page == HomePage::FIRST; }
 };
 
 // ── Message History Screen ─────────────────────────────────────────────────
-// Replaces MsgPreviewScreen. Shows one message per view, scrollable.
+// Shows one message per view, scrollable.
 // Owns the MsgEntry ring buffer for all devices.
 class MsgHistoryScreen : public UIScreen {
   UITask*          _task;
@@ -878,12 +878,12 @@ class MsgHistoryScreen : public UIScreen {
     char channel_tag[16];
     char msg[80];
     bool is_favorite;
-    bool valid;           // true = Eintrag belegt, false = geloescht/leer
+    bool valid;           // true = entry in use, false = deleted/empty
   };
   #define MAX_HISTORY_MSGS 32
   int num_total;            // number of valid entries in RAM = message counter on HomeScreen
-  int head;                 // zuletzt hinzugefuegter Index
-  int display_idx;          // aktuell angezeigte Nachricht
+  int head;                 // index added last
+  int display_idx;          // message currently shown
   bool _show_favorites_only;
   MsgEntry history[MAX_HISTORY_MSGS];
 
@@ -920,7 +920,7 @@ class MsgHistoryScreen : public UIScreen {
   void deleteEntry(int idx) {
     if (!history[idx].valid) return;
     bool was_favorite = history[idx].is_favorite;
-    memset(&history[idx], 0, sizeof(MsgEntry)); // valid=false durch memset
+    memset(&history[idx], 0, sizeof(MsgEntry)); // valid = false through memset
     if (num_total > 0) num_total--;
     _task->setUnreadCount(num_total);
     if (was_favorite && !hasAnyFavorite()) {
@@ -959,7 +959,7 @@ public:
 
     strncpy(p->from_name, from_name ? from_name : "", sizeof(p->from_name) - 1);
 
-    // v2.1: channel name (or "[DM]" from onMessageRecv) first, path_len only as fallback
+    // channel name (or "[DM]" from onMessageRecv) first, path_len only as fallback
     if (channel_name && channel_name[0]) {
       strncpy(p->channel_tag, channel_name, sizeof(p->channel_tag) - 1);
       p->channel_tag[sizeof(p->channel_tag) - 1] = 0;
@@ -973,7 +973,7 @@ public:
 
     num_total++;
     display_idx = head;
-    _task->setUnreadCount(num_total); // HomeScreen-Zaehler aktualisieren
+    _task->setUnreadCount(num_total); // update the HomeScreen counter
   }
 
   // Delete all entries — on app connect sync and on long press
@@ -988,7 +988,7 @@ public:
 
   int getNumTotal() const { return num_total; }
 
-  // V6 (#23): clock correction — keep relative times plausible
+  // (issue #23) clock correction — keep relative times plausible
   void shiftTimestamps(int32_t delta_secs) {
     for (int i = 0; i < MAX_HISTORY_MSGS; i++) {
       if (history[i].valid) shiftTimestamp(history[i].timestamp, delta_secs);
@@ -1005,7 +1005,7 @@ public:
       display_idx = (v >= 0) ? v : head;
     }
 
-    // Zaehle sichtbare Eintraege
+    // count visible entries
     int visible = 0;
     for (int i = 0; i < MAX_HISTORY_MSGS; i++) {
       if (history[i].valid && (!_show_favorites_only || history[i].is_favorite)) visible++;
@@ -1029,7 +1029,7 @@ public:
     auto p = &history[display_idx];
 
     // Title bar: channel tag + name left-aligned, time right-aligned (M1)
-    // Auf L1: zentriert (wenig Platz)
+    // L1: centred (little space)
     display.setColor(UIColor::primary_txt);
     display.fillRect(0, 0, display.width(), 11);
     display.setColor(UIColor::window_bkg);
@@ -1060,7 +1060,7 @@ public:
       display.setCursor(0, 1);
       display.print(left_part);
     } else {
-      // L1: Platz knapp — zentriert wie bisher
+      // L1: little space - centred
       bool is_dm = (strcmp(p->channel_tag, "[DM]") == 0);
       char title[48];
       if (is_dm) {
@@ -1076,7 +1076,7 @@ public:
     display.setColor(UIColor::primary_txt);
 
     if (display.height() >= 128) {
-      // M1: Trennlinie + Nachrichtentext + Fusszeile
+      // M1: separator line + message text + footer
       display.setColor(UIColor::primary_txt);
       display.drawRect(0, 12, display.width(), 1);
 
@@ -1181,7 +1181,7 @@ public:
   int render(DisplayDriver& display) override {
     display.setTextSize(1);
 
-    // Titelzeile invertiert
+    // title bar inverted
     display.setColor(UIColor::primary_txt);
     display.fillRect(0, 0, display.width(), 11);
     display.setColor(UIColor::window_bkg);
@@ -1204,7 +1204,7 @@ public:
       display.print(sel ? ">" : " ");
       display.setCursor(8, y);
       if (i == ROW_SHOW) {
-        // "Show: [All      ]" oder "Show: [Favorites]"
+        // "Show: [All      ]" or "Show: [Favorites]"
         display.print("Show: [");
         display.print(_filter == ALL ? "All      " : "Favorites");
         display.print("]");
@@ -1224,7 +1224,7 @@ public:
       display.print(sel ? "> " : "  ");
       display.print(labels[i]);
     }
-    // M1: Hinweistext
+    // M1: hint text
     display.setCursor(0, display.height() - 13);
     display.setColor(UIColor::primary_txt);
     display.print("short=next  long=select");
@@ -1269,7 +1269,7 @@ public:
       return true;
     }
 #else
-    // M1: kurzer Druck = naechster Eintrag, langer Druck = Auswahl (via handleLongPress → KEY_ENTER)
+    // M1: short press = next entry, long press = select (via handleLongPress → KEY_ENTER)
     if (c == KEY_NEXT || c == KEY_RIGHT) {
       _cursor = (Row)(((int)_cursor + 1) % ROW_COUNT);
       return true;
@@ -1293,12 +1293,12 @@ public:
   }
 };
 
-// ── Favoriten-Popup Screen ─────────────────────────────────────────────────
+// ── Favourite Popup Screen ─────────────────────────────────────────────────
 // Opens automatically when a message from a favourite arrives.
 // Always shows only the LAST favourite message (one slot, no buffer).
-// Wegdruecken loescht nichts — Nachricht bleibt in MsgHistoryScreen erhalten.
-// M1: kurzer Druck = weg (longpress tut nichts)
-// L1: back-Knopf = weg, kurzer Joystick-Druck = weg (longpress tut nichts)
+// Dismissing deletes nothing - the message stays in MsgHistoryScreen.
+// M1: short press = dismiss (long press does nothing)
+// L1: back button = dismiss, short joystick press = dismiss (long press does nothing)
 class FavPreviewScreen : public UIScreen {
   UITask*         _task;
   mesh::RTCClock* _rtc;
@@ -1314,7 +1314,7 @@ class FavPreviewScreen : public UIScreen {
 public:
   FavPreviewScreen(UITask* task, mesh::RTCClock* rtc) : _task(task), _rtc(rtc) {}
 
-  // V6 (#23): clock correction — keep relative time plausible
+  // (issue #23) clock correction — keep relative time plausible
   void shiftTimestamps(int32_t delta_secs) {
     if (_has_entry) shiftTimestamp(_entry.timestamp, delta_secs);
   }
@@ -1324,7 +1324,7 @@ public:
     _entry.timestamp = _rtc->getCurrentTime();
     strncpy(_entry.from_name, from_name, sizeof(_entry.from_name) - 1);
     _entry.from_name[sizeof(_entry.from_name) - 1] = 0;
-    // v2.1: channel name (or "[DM]" from onMessageRecv) first, path_len only as fallback
+    // channel name (or "[DM]" from onMessageRecv) first, path_len only as fallback
     if (channel_name && channel_name[0]) {
       strncpy(_entry.channel_tag, channel_name, sizeof(_entry.channel_tag) - 1);
       _entry.channel_tag[sizeof(_entry.channel_tag) - 1] = 0;
@@ -1342,19 +1342,19 @@ public:
     display.setTextSize(1);
 
     if (!_has_entry) {
-      // Sollte nie passieren — sicherheitshalber
+      // should never happen - just in case
       _task->gotoHomeScreen();
       return 100;
     }
 
-    // Titelzeile: Channel-Tag + Name + * (invertiert wie ueberall)
+    // title bar: channel tag + name + * (inverted as everywhere)
     display.setColor(UIColor::primary_txt);
     display.fillRect(0, 0, display.width(), 11);
     display.setColor(UIColor::window_bkg);
     char filtered_name[33];
     display.translateUTF8ToBlocks(filtered_name, _entry.from_name, sizeof(filtered_name));
 
-    // Zeitstempel
+    // timestamp
     char time_buf[8];
     uint32_t ts = _entry.timestamp;
     formatRelTime(time_buf, sizeof(time_buf), _rtc->getCurrentTime(), ts);
@@ -1374,7 +1374,7 @@ public:
       display.setCursor(0, 1);
       display.print(left_part);
     } else {
-      // L1: zentriert
+      // L1: centred
       char title[48];
       if (strcmp(_entry.channel_tag, "[DM]") == 0) {
         snprintf(title, sizeof(title), "%s %s *", _entry.channel_tag, filtered_name);
@@ -1386,7 +1386,7 @@ public:
     display.setColor(UIColor::primary_txt);
 
     if (display.height() >= 128) {
-      // M1: Trennlinie + Nachrichtentext
+      // M1: separator line + message text
       display.drawRect(0, 12, display.width(), 1);
       char filtered_msg[sizeof(_entry.msg)];
       display.translateUTF8ToBlocks(filtered_msg, _entry.msg, sizeof(filtered_msg));
@@ -1414,9 +1414,9 @@ public:
   }
 
   bool handleInput(char c) override {
-    // M1: kurzer Druck (KEY_NEXT) = weg
-    // L1: back-Knopf (KEY_BACK) oder kurzer Joystick-Druck (KEY_ENTER) = weg
-    // longpress tut in diesem Screen bewusst nichts
+    // M1: short press (KEY_NEXT) = dismiss
+    // L1: back button (KEY_BACK) or short joystick press (KEY_ENTER) = dismiss
+    // long press does nothing on this screen on purpose
     if (c == KEY_NEXT || c == KEY_BACK || c == KEY_ENTER) {
       _task->gotoHomeScreen();
       return true;
@@ -1426,21 +1426,21 @@ public:
 };
 
 // ── Message Compose Screen (L1 only) ───────────────────────────────────────
-// Tastatur-Screen zum Tippen einer Nachricht. 4-Zeilen-QWERTY-Grid.
-// Muss VOR ChannelSelectScreen definiert sein (Cast in ChannelSelectScreen::handleInput).
+// Keyboard screen for typing a message. 4-row QWERTY grid.
+// Must be defined BEFORE ChannelSelectScreen (cast in ChannelSelectScreen::handleInput).
 #if UI_HAS_JOYSTICK
 class MsgComposeScreen : public UIScreen {
   UITask*   _task;
   UIScreen* _channel_select;  // accessible for ChannelSelectScreen::setCompose() (set in constructor)
   uint8_t   _channel_idx;
 
-  char    _text[21];   // max 20 Zeichen + Nullterminator
+  char    _text[21];   // max 20 characters + terminator
   uint8_t _text_len;
   uint8_t _row;
   uint8_t _col;
 
-  // Keyboard-Layout — 4 Zeilen
-  // '_' = SPACE, '<' = BACKSPACE, '~' = SEND-Taste
+  // keyboard layout - 4 rows
+  // '_' = SPACE, '<' = BACKSPACE, '~' = SEND key
   static const char* const ROWS[4];
   static const uint8_t ROW_LENS[4];
 
@@ -1476,7 +1476,7 @@ public:
   int render(DisplayDriver& display) override {
     display.setTextSize(1);
 
-    // Titelzeile: Channel-Name
+    // title bar: channel name
     ChannelDetails ch;
     const char* ch_name = "?";
     char ch_name_buf[17];
@@ -1498,7 +1498,7 @@ public:
     display.print(_text);
     int cx = display.getTextWidth(_text);
     if (cx < display.width() - 4) {
-      display.fillRect(cx, 12, 5, 9);  // Cursor-Block invertiert
+      display.fillRect(cx, 12, 5, 9);  // cursor block inverted
     }
 
     // Character counter top-right (does not overlap title bar)
@@ -1506,11 +1506,11 @@ public:
     snprintf(cnt, sizeof(cnt), "%d/20", _text_len);
     int cw = display.getTextWidth(cnt);
     display.setCursor(display.width() - cw - 1, 1);
-    display.setColor(UIColor::window_bkg);  // im invertierten Titelbereich
+    display.setColor(UIColor::window_bkg);  // inside the inverted title area
     display.print(cnt);
     display.setColor(UIColor::primary_txt);
 
-    // Keyboard-Grid — 4 Zeilen ab y=24, je 10px Abstand
+    // keyboard grid - 4 rows from y=24, 10px apart
     for (uint8_t r = 0; r < 4; r++) {
       int y = 24 + r * 10;
       if (y > display.height()) break;
@@ -1530,7 +1530,7 @@ public:
           display.setColor(UIColor::primary_txt);
         }
         display.setCursor(x + 1, y);
-        // Sonderzeichen lesbarer darstellen
+        // show special keys in a readable way
         if (ch_char == '_')      display.print("_");   // SPACE
         else if (ch_char == '<') display.print("<");   // BACKSPACE
         else if (ch_char == '~') display.print("OK");  // SEND
@@ -1565,7 +1565,7 @@ public:
       return true;
     }
     if (c == KEY_ENTER) {
-      // Zeichen einfuegen
+      // insert character
       char ch_char = ROWS[_row][_col];
       if (ch_char == '_') {
         if (_text_len < 20) { _text[_text_len++] = ' '; _text[_text_len] = 0; }
@@ -1579,7 +1579,7 @@ public:
       return true;
     }
     if (c == KEY_SELECT) {
-      // Langer Joystick-Druck = Senden
+      // long joystick press = send
       _doSend();
       return true;
     }
@@ -1592,12 +1592,12 @@ public:
   }
 };
 
-// Keyboard-Daten als static member
+// keyboard data as static member
 const char* const MsgComposeScreen::ROWS[4] = {
-  "1234567890.",    // Zeile 0: Ziffern
-  "QWERTYUIOP",    // Zeile 1: QWERTY
-  "ASDFGHJKL,",    // Zeile 2: ASDF
-  "ZXCVBNM_<~"     // Zeile 3: ZXCV + SPACE + BACKSPACE + SEND
+  "1234567890.",    // row 0: digits
+  "QWERTYUIOP",    // row 1: QWERTY
+  "ASDFGHJKL,",    // row 2: ASDF
+  "ZXCVBNM_<~"     // row 3: ZXCV + SPACE + BACKSPACE + SEND
 };
 const uint8_t MsgComposeScreen::ROW_LENS[4] = { 11, 10, 10, 10 };
 
@@ -1637,7 +1637,7 @@ public:
   int render(DisplayDriver& display) override {
     display.setTextSize(1);
 
-    // Titelzeile
+    // title bar
     display.setColor(UIColor::primary_txt);
     display.fillRect(0, 0, display.width(), 11);
     display.setColor(UIColor::window_bkg);
@@ -1735,7 +1735,7 @@ public:
   int render(DisplayDriver& display) override {
     display.setTextSize(1);
 
-    // Titelzeile
+    // title bar
     display.setColor(UIColor::primary_txt);
     display.fillRect(0, 0, display.width(), 11);
     display.setColor(UIColor::window_bkg);
@@ -1754,7 +1754,7 @@ public:
         display.setColor(UIColor::primary_txt);
       }
 
-      // Pfeil-Cursor
+      // arrow cursor
       display.setCursor(0, y);
       display.print(selected ? ">" : " ");
 
@@ -1822,7 +1822,7 @@ public:
           the_mesh.toggleOffGrid();
           _task->notify(UIEventType::ack);
           if (the_mesh.isOffGridActive()) {
-            // v2.1: show the region the off-grid frequency was chosen for
+            // show the region the off-grid frequency was chosen for
             char alert[24];
             snprintf(alert, sizeof(alert), "Off-Grid: ON (%s)", offGridRegionLabel(the_mesh.getNodePrefs()->freq));
             _task->showAlert(alert, 1000);
@@ -1855,14 +1855,14 @@ class SOSAlertScreen : public UIScreen {
   NodePrefs* _node_prefs;
   char _from[32];
   char _text[80];
-  char _node_name[32];  // V3.05: node name extracted from text
+  char _node_name[32];  // node name extracted from text
 
 public:
   SOSAlertScreen(UITask* task, NodePrefs* node_prefs)
     : _task(task), _node_prefs(node_prefs) {
     _from[0] = 0;
     _text[0] = 0;
-    _node_name[0] = 0;  // V3.05
+    _node_name[0] = 0;
   }
 
   void setAlert(const char* from, const char* text) {
@@ -1871,7 +1871,7 @@ public:
     strncpy(_text, text, sizeof(_text) - 1);
     _text[sizeof(_text) - 1] = 0;
 
-    // V3.05: extract node name from text — format: "NodeName: !SOS ..."
+    // extract node name from text — format: "NodeName: !SOS ..."
     // Everything before the first ':' is the node name
     _node_name[0] = 0;
     const char* colon = strchr(text, ':');
@@ -1880,7 +1880,7 @@ public:
       if (len > 31) len = 31;
       strncpy(_node_name, text, len);
       _node_name[len] = 0;
-      // Leerzeichen am Ende trimmen
+      // trim trailing spaces
       for (int i = len - 1; i >= 0 && _node_name[i] == ' '; i--)
         _node_name[i] = 0;
     } else {
@@ -1901,7 +1901,7 @@ public:
   int render(DisplayDriver& display) override {
     display.setTextSize(1);
 
-    // Titelzeile invertiert
+    // title bar inverted
     display.setColor(UIColor::primary_txt);
     display.fillRect(0, 0, display.width(), 11);
     display.setColor(UIColor::window_bkg);
@@ -1917,13 +1917,13 @@ public:
       display.drawTextCentered(display.width() / 2, 72, _node_name);
       display.setTextSize(1);
     } else {
-      // Kleines Display: kompaktes Layout wie bisher
+      // small display: compact layout
       display.drawXbm((display.width() - 32) / 2, 13, advert_icon, 32, 32);
 
       display.setCursor(0, 47);
       display.setTextSize(1);
       display.setColor(UIColor::primary_txt);
-      display.print(_node_name);  // V3.05: Node-Name statt Channel-Name
+      display.print(_node_name);  // node name instead of channel name
     }
 
     // Hint at the bottom — relative on all displays
@@ -1961,7 +1961,7 @@ public:
   int render(DisplayDriver& display) override {
     display.setTextSize(1);
 
-    // Titelzeile
+    // title bar
     display.setColor(UIColor::primary_txt);
     display.fillRect(0, 0, display.width(), 11);
     display.setColor(UIColor::window_bkg);
@@ -1975,7 +1975,7 @@ public:
     int icon_y = display.height() / 2 - icon_size / 2;
 
     if (!_confirm) {
-      // Zustand 1: Idle
+      // State 1: idle
       if (large_display)
         display.drawXbm((display.width() - 48) / 2, icon_y, advert_icon_large, 48, 48);
       else
@@ -2027,7 +2027,7 @@ public:
           _task->notify(UIEventType::ack);
           _task->showAlert("SOS sent!", 2000);
 #ifdef PIN_GPS_SWITCH
-          // v2.2: SOS switched the GPS setting on, but the hardware switch has priority
+          // SOS switched the GPS setting on, but the hardware switch has priority
           if (!GpsCycle::hardwareSwitchOn()) _task->showAlertNext("GPS switch is off!", 4000);
 #endif
         } else {
@@ -2066,7 +2066,7 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
 #ifdef PIN_BUZZER
   buzzer.begin();
   buzzer.quiet(_node_prefs->buzzer_quiet);
-  buzzer.startup();   // V6: upstream startup tune (respects buzzer_quiet)
+  buzzer.startup();   // upstream startup tune (respects buzzer_quiet)
 #endif
 
 #ifdef DISP_BACKLIGHT
@@ -2099,12 +2099,12 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
   msg_filter  = new MsgFilterScreen(this, msg_history);
   fav_preview = new FavPreviewScreen(this, &rtc_clock);
   outdoor_menu = new OutdoorMenuScreen(this, node_prefs);
-  sos_alert = new SOSAlertScreen(this, node_prefs);   // V3
-  sos_send  = new SOSSendScreen(this, node_prefs);    // V3
+  sos_alert = new SOSAlertScreen(this, node_prefs);
+  sos_send  = new SOSSendScreen(this, node_prefs);
 #if UI_HAS_JOYSTICK
-  // V5: channel_select is created first as a placeholder, then linked with compose.
+  // channel_select is created first as a placeholder, then linked with compose.
   // MsgComposeScreen receives channel_select as back-reference for navigation.
-  channel_select = new ChannelSelectScreen(this, NULL);  // compose-Referenz unten setzen
+  channel_select = new ChannelSelectScreen(this, NULL);  // set the compose reference below
   msg_compose    = new MsgComposeScreen(this, channel_select);
   ((ChannelSelectScreen*)channel_select)->setCompose(msg_compose);
 #endif
@@ -2116,7 +2116,7 @@ void UITask::showAlert(const char* text, int duration_millis) {
   _alert_expiry = millis() + duration_millis;
 }
 
-// v2.2: second alert, shown when the current one expires (e.g. "SOS sent!" -> hint)
+// second alert, shown when the current one expires (e.g. "SOS sent!" -> hint)
 void UITask::showAlertNext(const char* text, int duration_millis) {
   strncpy(_alert_next, text, sizeof(_alert_next) - 1);
   _alert_next[sizeof(_alert_next) - 1] = 0;
@@ -2153,9 +2153,9 @@ switch(t){
 }
 
 
-// ── V6: MyMesh::Listener ───────────────────────────────────────────────────
-// Since MeshCore v1.18 MyMesh no longer knows the UI. The display decisions that
-// FieldMesh used to make inside MyMesh.cpp (V3/V5) now live here.
+// ── MyMesh::Listener ───────────────────────────────────────────────────────
+// MyMesh does not know the UI. FieldMesh's display decisions (message history,
+// SOS, favourites, online counter) are made here.
 
 void UITask::onMessageRecv(mesh::Packet *pkt, const ContactInfo &from, uint8_t txt_type, uint32_t sender_timestamp, const char* text) {
   // we only want to show text messages on display, not cli data (incl. TXT_TYPE_CLI_COMMAND)
@@ -2163,13 +2163,13 @@ void UITask::onMessageRecv(mesh::Packet *pkt, const ContactInfo &from, uint8_t t
 
   uint8_t path_len = pkt->isRouteFlood() ? pkt->path_len : 0xFF;
 
-  // V5: newMsg() only when app is NOT connected.
+  // newMsg() only when app is NOT connected.
   // When connected, messages are handled on the phone — do not add to display history.
   // But always update the active node counter so incoming messages are counted while connected.
   if (!hasConnection()) {
     bool is_fav = (from.flags & 0x01) != 0;
-    // v2.1: always tag direct messages as [DM] - addMessage()/setMessage() only recognise
-    // direct-routed DMs (path_len 0xFF), flood-routed DMs were shown as [CH]
+    // always tag direct messages as [DM] - addMessage()/setMessage() only recognise
+    // direct-routed DMs (path_len 0xFF), flood-routed DMs would be shown as [CH]
     newMsg(path_len, from.name, text, _msgcount, is_fav, "[DM]");
     notify(UIEventType::contactMessage);
   } else {
@@ -2186,15 +2186,15 @@ void UITask::onChannelMessageRecv(mesh::Packet *pkt, ChannelDetails& channel_det
     notify(UIEventType::channelMessage);
   }
 
-  // V3: SOS-Erkennung — "!SOS" irgendwo im Text (MeshCore stellt Node-Name voran)
-  // v2.1: only in the SOS channel (where sendSOS() sends) - "!SOS" in Public etc. is a normal message
+  // SOS detection - "!SOS" anywhere in the text (MeshCore puts the node name in front)
+  // only in the SOS channel (where sendSOS() sends) - "!SOS" in Public etc. is a normal message
   if (strstr(text, "!SOS") != NULL && MyMesh::isSosChannel(channel_name)) {
     triggerSOS(channel_name, text);
     return;  // do not call newMsg() — SOSAlertScreen takes priority
   }
 
   // extract sender name for display and online node cache
-  // everything before ": " in the text — e.g. "Juno48 | Region: Hello" -> "Juno48 | Region"
+  // everything before ": " in the text — e.g. "Alice | Region: Hello" -> "Alice | Region"
   char sender_name[33];
   const char* display_name = MyMesh::extractSenderName(text, sender_name, sizeof(sender_name))
                              ? sender_name : channel_name;
@@ -2207,7 +2207,7 @@ void UITask::onChannelMessageRecv(mesh::Packet *pkt, ChannelDetails& channel_det
 }
 
 void UITask::onQueueSizeChanged(int msgcount) {
-  // replaces the former msgRead() call from MyMesh (CMD_SYNC_NEXT_MESSAGE) —
+  // called by MyMesh on CMD_SYNC_NEXT_MESSAGE -
   // also called after every queued message, msgRead() only acts on msgcount == 0
   msgRead(msgcount);
 }
@@ -2228,7 +2228,7 @@ void UITask::onControlDataRecv(const mesh::Packet* packet) {
 #if UI_DISCOVER_SCREEN
   if (packet->payload_len >= 14 && (packet->payload[0] & 0xF0) == CTL_TYPE_NODE_DISCOVER_RESP) {
     ((HomeScreen *) home)->handleDiscoverResponse(packet);
-    // V6: refresh discovery page right away when it is visible
+    // refresh discovery page right away when it is visible
     if (curr == home && ((HomeScreen *) home)->isOnDiscoveryPage()) {
       refreshDisplay();
     }
@@ -2236,7 +2236,7 @@ void UITask::onControlDataRecv(const mesh::Packet* packet) {
 #endif
 }
 
-// V6 (#23): RTC was corrected (app time sync / GPS) — shift all timestamps stored by the UI
+// (issue #23) RTC was corrected (app time sync / GPS) — shift all timestamps stored by the UI
 // (MyMesh shifts advert_paths[] itself before calling this)
 void UITask::onClockAdjusted(int32_t delta_secs) {
   ((MsgHistoryScreen*) msg_history)->shiftTimestamps(delta_secs);
@@ -2254,7 +2254,7 @@ void UITask::msgRead(int msgcount) {
     // App has fully drained the sync queue — also clear history in RAM.
     // Messages read via the app should not remain on the display.
     ((MsgHistoryScreen*) msg_history)->clearAll();  // also resets _num_unread via setUnreadCount(0)
-    _latest_fav_name[0] = 0;  //resets Favorite_cache at App-Sync
+    _latest_fav_name[0] = 0;  //resets the favourite cache on app sync
     _latest_fav_time = 0;
     
     gotoHomeScreen();
@@ -2264,12 +2264,12 @@ void UITask::msgRead(int msgcount) {
 void UITask::newMsg(uint8_t path_len, const char* from_name, const char* text, int msgcount, bool is_favorite, const char* channel_name) {
   _msgcount = msgcount;
 
-  // V3: do not interrupt SOS alarm with normal messages
+  // do not interrupt SOS alarm with normal messages
   if (curr == sos_alert) return;
 
-  // V5: Nachricht in History speichern.
+  // store the message in the history.
   // addMessage() calls setUnreadCount(num_total) — _num_unread is set there.
-  // newMsg() is called by MyMesh only when app is NOT connected (since V5.03).
+  // newMsg() is only called while the app is NOT connected.
   ((MsgHistoryScreen*) msg_history)->addMessage(path_len, from_name, text, is_favorite, channel_name);
 
   // Update online node cache — from_name is always the node name at this point
@@ -2285,10 +2285,10 @@ void UITask::newMsg(uint8_t path_len, const char* from_name, const char* text, i
     _latest_fav_time = rtc_clock.getCurrentTime();
   }
 
-  // V5.05: favourite popup — always open on a favourite message.
+  // favourite popup — always open on a favourite message.
   // Also when phone is connected (user may not be looking at the phone).
   // FavPreviewScreen always overwrites the last entry (no buffer).
-  // Wegdruecken loescht nichts — Nachricht bleibt in History erhalten.
+  // Dismissing deletes nothing - the message stays in the history.
   // Exception: if history or filter screen is already active → show alert only, no popup switch.
   if (is_favorite) {
     ((FavPreviewScreen*) fav_preview)->setMessage(path_len, from_name, text, channel_name);
@@ -2302,7 +2302,7 @@ void UITask::newMsg(uint8_t path_len, const char* from_name, const char* text, i
     showAlert("+1 new", 1500);
   }
 
-  // Display refresh logic: identical to V4
+  // display refresh logic
   if (_display != NULL) {
     if (!_display->isOn() && !hasConnection()) {
       _display->turnOn();
@@ -2436,7 +2436,7 @@ void UITask::shutdown(bool restart){
   if (restart) {
     _board->reboot();
   } else {
-    // V6 (upstream): clear the screen, then power off board incl. radio, display, GPS and components
+    // upstream: clear the screen, then power off board incl. radio, display, GPS and components
     if (_display != NULL) {
       _display->forceFullRefresh();
       _display->clear();
@@ -2473,7 +2473,7 @@ void UITask::loop() {
   }
   ev = joystick_left.check();
   if (ev == BUTTON_EVENT_CLICK) {
-    c = checkDisplayOn(KEY_LEFT);        // links = vorherige Seite
+    c = checkDisplayOn(KEY_LEFT);        // left = previous page
   } else if (ev == BUTTON_EVENT_LONG_PRESS) {
     c = handleLongPress(KEY_LEFT);
   }
@@ -2485,9 +2485,9 @@ void UITask::loop() {
   }
   ev = back_btn.check();
   if (ev == BUTTON_EVENT_CLICK) {
-    c = checkDisplayOn(KEY_BACK);       // einfacher Druck = Zurueck-Navigation
+    c = checkDisplayOn(KEY_BACK);       // single press = back navigation
   } else if (ev == BUTTON_EVENT_TRIPLE_CLICK) {
-    c = handleTripleClick(KEY_SELECT);  // 3x = Buzzer toggle (unveraendert)
+    c = handleTripleClick(KEY_SELECT);  // 3x = buzzer toggle
   }
 #elif defined(PIN_USER_BTN)
   int ev = user_btn.check();
@@ -2562,7 +2562,7 @@ void UITask::loop() {
   }
 
   // PIN_BUTTON2 as backlight toggle — only if the button is present on the device.
-  // INPUT_PULLUP: LOW = gedrueckt, HIGH = losgelassen
+  // INPUT_PULLUP: LOW = pressed, HIGH = released
   #ifdef PIN_BUTTON2
   bool btn2_state = (digitalRead(PIN_BUTTON2) == LOW);
   if (btn2_state && !_btn2_was_pressed) {
@@ -2588,13 +2588,13 @@ void UITask::loop() {
 
   if (curr) curr->poll();
 
-  // v2.1: GPS/Tracking page on screen -> keep the GPS running (+60 s after leaving/display off)
+  // GPS/Tracking page on screen -> keep the GPS running (+60 s after leaving/display off)
   if (_display != NULL && _display->isOn() && curr == home
       && (((HomeScreen*)home)->isOnTrackingPage() || ((HomeScreen*)home)->isOnGpsPage())) {
     the_mesh.gpsCycle().keepAwake(GpsCycle::KEEP_AWAKE_PAGE_MS);
   }
 
-  if (_alert_next[0] && millis() >= _alert_expiry) {   // v2.2: queued second alert
+  if (_alert_next[0] && millis() >= _alert_expiry) {   // queued second alert
     showAlert(_alert_next, _alert_next_ms);
     _alert_next[0] = 0;
     _next_refresh = 0;
@@ -2642,12 +2642,12 @@ void UITask::loop() {
 #ifdef AUTO_SHUTDOWN_MILLIVOLTS
   if (millis() > next_batt_chck) {
     uint16_t milliVolts = getBattMilliVolts();
-    // v2.3: shut down only after AUTO_SHUTDOWN_LOW_READINGS low readings in a row (one every
+    // shut down only after AUTO_SHUTDOWN_LOW_READINGS low readings in a row (one every
     // 8 s), so a single reading during a TX current spike does not switch the device off
     // (idea from upstream PR #3462)
     if (milliVolts > 0 && milliVolts < AUTO_SHUTDOWN_MILLIVOLTS && !board.isExternalPowered()) {
       if (_low_batt_count < 255) _low_batt_count++;
-      // V6 (upstream): never shut down while externally powered (checked above); alert shown on all displays,
+      // never shut down while externally powered (checked above); alert shown on all displays,
       // non-eink displays keep it visible for 3s before power-off
       if (_low_batt_count >= AUTO_SHUTDOWN_LOW_READINGS) {
         if (_display != NULL) {
@@ -2670,7 +2670,7 @@ void UITask::loop() {
 }
 
 #if UI_HAS_JOYSTICK
-// V5: load channels and switch to ChannelSelectScreen.
+// load channels and switch to ChannelSelectScreen.
 // Implemented here (not inline in .h) because ChannelSelectScreen is not known in the header.
 void UITask::gotoChannelSelect() {
   ((ChannelSelectScreen*)channel_select)->loadChannels();
@@ -2723,30 +2723,30 @@ char UITask::handleLongPress(char c) {
     curr->handleInput(KEY_ENTER);
     c = 0;
   } else if (curr == msg_filter) {
-    // V5: long press in MsgFilter = execute selection (M1: no joystick)
+    // long press in MsgFilter = execute selection (M1: no joystick)
     curr->handleInput(KEY_ENTER);
     c = 0;
   } else if (curr == msg_history) {
-    // V5: long press in history = delete all messages
-    // KEY_SELECT = explizit "lang" — kurzer Druck (KEY_ENTER) tut in History nichts
+    // long press in history = delete all messages
+    // KEY_SELECT = explicitly "long" - a short press (KEY_ENTER) does nothing in the history
     curr->handleInput(KEY_SELECT);
     c = 0;
   } else if (curr == fav_preview) {
-    // V5.05: Langer Druck im Favoriten-Popup tut bewusst nichts
+    // long press in the favourite popup does nothing on purpose
     c = 0;
   } else if (curr == sos_alert) {
     // Long press on SOS alarm = acknowledge
     curr->handleInput(KEY_ENTER);
     c = 0;
   } else if (curr == sos_send) {
-    // Langer Druck im SOS-Sende-Screen:
+    // long press in the SOS send screen:
     // KEY_SELECT = explicitly "long" so handleInput can distinguish short/long
     curr->handleInput(KEY_SELECT);
     c = 0;
   } else if (curr == home && ((HomeScreen*)home)->isOnFirstPage()) {
-    // V5: long press on FIRST page (message page) = open MsgFilterScreen (M1)
+    // long press on FIRST page (message page) = open MsgFilterScreen (M1)
     setCurrScreen(msg_filter);
-    _next_refresh = 0;  // sofortiger Refresh
+    _next_refresh = 0;  // refresh right away
     c = 0;
   } else if (curr == home && ((HomeScreen*)home)->isOnTrackingPage()) {
     // Long press on Tracking page = open outdoor menu
@@ -2754,14 +2754,14 @@ char UITask::handleLongPress(char c) {
     c = 0;
   } else if (curr == home && ((HomeScreen*)home)->isOnRecentPage()) {
     // Long press on Recent page = send advert
-    // advert() entscheidet automatisch: ZeroHop (normal) oder Flood (Off-Grid)
+    // advert() decides: zero hop (normal) or flood (Off-Grid)
     the_mesh.advert();
     notify(UIEventType::ack);
     showAlert("Advert sent!", 1500);
-    _next_refresh = 0;  // sofortiger Refresh damit Alert gleich erscheint
+    _next_refresh = 0;  // refresh right away so the alert shows at once
     c = 0;
   } else if (curr == home && ((HomeScreen*)home)->isOnSOSPage()) {
-    // V3: long press on SOS page = open SOS send screen
+    // long press on SOS page = open SOS send screen
     ((SOSSendScreen*)sos_send)->resetState();
     setCurrScreen(sos_send);
     c = 0;
@@ -2801,7 +2801,7 @@ void UITask::toggleGPS() {
     int num = _sensors->getNumSettings();
     for (int i = 0; i < num; i++) {
       if (strcmp(_sensors->getSettingName(i), "gps") == 0) {
-        // v2.1: decide by the setting - while the GPS duty cycle sleeps the board reports "0"
+        // decide by the setting - while the GPS duty cycle sleeps the board reports "0"
         if (_node_prefs->gps_enabled) {
           _sensors->setSettingValue("gps", "0");
           _node_prefs->gps_enabled = 0;
@@ -2836,7 +2836,7 @@ void UITask::toggleBuzzer() {
   #endif
 }
 
-// V3: trigger SOS alarm — called by UITask::onChannelMessageRecv() (V6: listener)
+// trigger SOS alarm — called by UITask::onChannelMessageRecv()
 void UITask::triggerSOS(const char* from, const char* text) {
   ((SOSAlertScreen*)sos_alert)->setAlert(from, text);
 
@@ -2862,7 +2862,7 @@ void UITask::triggerSOS(const char* from, const char* text) {
   _next_refresh = 0;
 }
 
-// V3: buzzer helper functions for SOSAlertScreen::poll()
+// buzzer helper functions for SOSAlertScreen::poll()
 bool UITask::isBuzzerPlaying() {
 #ifdef PIN_BUZZER
   return buzzer.isPlaying();

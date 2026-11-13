@@ -370,7 +370,7 @@ int MyMesh::handleRequest(ClientInfo *sender, uint32_t sender_timestamp, uint8_t
       return reply_offset;
     }
   } else if (payload[0] == REQ_TYPE_GET_OWNER_INFO) {
-    sprintf((char *) &reply_data[4], "%s\n%s\n%s", getFirmwareVer(), _prefs.node_name, _prefs.owner_info);   // FieldMesh #17 (stock: same text)
+    sprintf((char *) &reply_data[4], "%s\n%s\n%s", getFirmwareVer(), _prefs.node_name, _prefs.owner_info);   // FieldMesh (stock: same text)
     return 4 + strlen((char *) &reply_data[4]);
   }
   return 0; // unknown command
@@ -1031,7 +1031,7 @@ void MyMesh::begin(FILESYSTEM *fs) {
 
 void MyMesh::sendFloodScoped(const TransportKey& scope, mesh::Packet* pkt, uint32_t delay_millis, uint8_t path_hash_size) {
 #ifdef FIELDMESH_REPEATER
-  if (_fm.offgrid) { sendFlood(pkt, delay_millis, path_hash_size); return; }   // Off-Grid: own floods un-scoped (as companions, #25)
+  if (_fm.offgrid) { sendFlood(pkt, delay_millis, path_hash_size); return; }   // Off-Grid: own floods un-scoped (as companions, issue #25)
 #endif
   if (scope.isNull()) {
     sendFlood(pkt, delay_millis, path_hash_size);

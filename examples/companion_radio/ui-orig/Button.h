@@ -8,7 +8,7 @@
 #define BUTTON_CLICK_TIMEOUT_MS    500     // Max time between clicks for multi-click
 #define BUTTON_LONG_PRESS_TIME_MS  3000    // Time to trigger long press (3 seconds)
 #define BUTTON_READ_INTERVAL_MS    10      // How often to read the button
-#define BUTTON_CLICK_HOLD_MS       300     // v2.2: click + hold starts after holding this long
+#define BUTTON_CLICK_HOLD_MS       300     // click + hold starts after holding this long
 
 class Button {
 public:
@@ -18,11 +18,11 @@ public:
         DOUBLE_PRESS,
         TRIPLE_PRESS,
         QUADRUPLE_PRESS,
-        QUINTUPLE_PRESS,     // V2.02: 5x click for off-grid toggle
+        QUINTUPLE_PRESS,     // 5x click for off-grid toggle
         LONG_PRESS,
         ANY_PRESS,
-        CLICK_HOLD_START,    // v2.2: one click, then press again and hold
-        CLICK_HOLD_END       // v2.2: released after CLICK_HOLD_START
+        CLICK_HOLD_START,    // one click, then press again and hold
+        CLICK_HOLD_END       // released after CLICK_HOLD_START
     };
 
     using EventCallback = std::function<void()>;
@@ -38,11 +38,11 @@ public:
     void onDoublePress(EventCallback callback) { _onDoublePress = callback; }
     void onTriplePress(EventCallback callback) { _onTriplePress = callback; }
     void onQuadruplePress(EventCallback callback) { _onQuadruplePress = callback; }
-    void onQuintuplePress(EventCallback callback) { _onQuintuplePress = callback; }  // V2.02
+    void onQuintuplePress(EventCallback callback) { _onQuintuplePress = callback; }
     void onLongPress(EventCallback callback) { _onLongPress = callback; }
     void onAnyPress(EventCallback callback) { _onAnyPress = callback; }
-    void onClickHoldStart(EventCallback callback) { _onClickHoldStart = callback; }   // v2.2
-    void onClickHoldEnd(EventCallback callback) { _onClickHoldEnd = callback; }       // v2.2
+    void onClickHoldStart(EventCallback callback) { _onClickHoldStart = callback; }
+    void onClickHoldEnd(EventCallback callback) { _onClickHoldEnd = callback; }
     
     // State getters
     bool isPressed() const { return _currentState; }
@@ -54,7 +54,7 @@ private:
         PRESSED,
         RELEASED,
         WAITING_FOR_MULTI_CLICK,
-        CLICK_HOLDING        // v2.2: click + hold active, no long press (power off) from here
+        CLICK_HOLDING        // click + hold active, no long press (power off) from here
     };
 
     uint8_t _pin;
@@ -72,7 +72,7 @@ private:
     uint32_t _lastReadTime = 0;
     
     uint8_t _clickCount = 0;
-    bool _holdAfterClick = false;   // v2.2: current press started right after exactly one click
+    bool _holdAfterClick = false;   // current press started right after exactly one click
     EventType _lastEvent = NONE;
     
     // Callbacks
@@ -80,11 +80,11 @@ private:
     EventCallback _onDoublePress = nullptr;
     EventCallback _onTriplePress = nullptr;
     EventCallback _onQuadruplePress = nullptr;
-    EventCallback _onQuintuplePress = nullptr;  // V2.02
+    EventCallback _onQuintuplePress = nullptr;
     EventCallback _onLongPress = nullptr;
     EventCallback _onAnyPress = nullptr;
-    EventCallback _onClickHoldStart = nullptr;   // v2.2
-    EventCallback _onClickHoldEnd = nullptr;     // v2.2
+    EventCallback _onClickHoldStart = nullptr;
+    EventCallback _onClickHoldEnd = nullptr;
     
     bool readButton();
     void handleStateChange();

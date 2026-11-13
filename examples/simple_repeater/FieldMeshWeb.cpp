@@ -40,7 +40,7 @@ static char fm_web_host[64] = "";   // mDNS name without ".local", made from the
 static unsigned long fm_next_snapshot = 0;
 static unsigned long fm_next_big_snapshot = 0;
 
-// bigger snapshots (P5c), in PSRAM (malloc > 4 KB goes to PSRAM on the G2)
+// bigger snapshots, in PSRAM (malloc > 4 KB goes to PSRAM on the G2)
 struct FmSnap { char* buf; size_t cap; size_t len; };
 static FmSnap fm_snap_nodes = { NULL, 48000, 0 };
 static FmSnap fm_snap_net   = { NULL, 8000, 0 };
@@ -864,7 +864,7 @@ void MyMesh::fmWebLoop() {
       }
       dp += snprintf(dp, end - dp, ",\"wx\":{\"la\":%.5f,\"lo\":%.5f,\"age\":%ld,\"max\":%d}", wlat, wlon, age, FM_WX_REFRESH_S);
     }
-    // firmware (#17): FieldMesh version, MeshCore version (without commit), build date
+    // firmware: FieldMesh version, MeshCore version (without commit), build date
     char mc[16];
     fmMeshCoreVersion(mc, sizeof(mc), FIRMWARE_VERSION);
     dp += snprintf(dp, end - dp, ",\"fw\":");

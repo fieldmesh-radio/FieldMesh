@@ -1,5 +1,5 @@
 // FieldMesh: tests for the tracking send cadence (examples/companion_radio/TrackScheduler.h).
-// Values decided in PLAN_v6.1.md: first fix right away, >= 100 m and >= 2 min (60 s while
+// Expected behaviour: first fix right away, >= 100 m and >= 2 min (60 s while
 // moving fast) for a movement send, heartbeat every 10 min, fixes with < 4 satellites ignored.
 
 #include <gtest/gtest.h>

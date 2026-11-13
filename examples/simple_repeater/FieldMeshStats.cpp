@@ -1,4 +1,4 @@
-// FieldMesh repeater: data for the dashboard (P5b).
+// FieldMesh repeater: data for the dashboard.
 // Only compiled in with -D FIELDMESH_REPEATER=1.
 //
 // - Node table: every valid advert the box hears (name, type, hops, SNR, position).

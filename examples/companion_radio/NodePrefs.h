@@ -48,7 +48,7 @@ public:
   char default_scope_name[31];
   uint8_t default_scope_key[16];
   int8_t tz_offset = 0;
-  // FieldMesh Off-Grid: gespeicherte Normal-Parameter (werden vor Off-Grid-Aktivierung gesichert)
+  // FieldMesh Off-Grid: normal parameters (saved before Off-Grid is switched on)
   float   normal_freq = 0;
   float   normal_bw = 0;
   uint8_t normal_sf = 0;

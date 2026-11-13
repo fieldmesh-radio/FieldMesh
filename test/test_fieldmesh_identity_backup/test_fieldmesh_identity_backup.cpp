@@ -1,5 +1,5 @@
 // FieldMesh: tests for the identity/prefs backup (examples/companion_radio/IdentityBackup.h).
-// v2.2.1: the identity file must have exactly 96 bytes. A truncated identity must never replace
+// The identity file must have exactly 96 bytes. A truncated identity must never replace
 // a good backup, and at boot a truncated primary file is restored from the backup like a
 // missing one. Upstream IdentityStore::save() reports success even when the write failed.
 

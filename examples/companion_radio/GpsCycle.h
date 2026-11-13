@@ -1,9 +1,9 @@
 #pragma once
 
-// FieldMesh v2.1: GPS duty cycle (power saving), modelled on Meshtastic (src/gps/GPS.cpp,
-// GPSUpdateScheduling.cpp) - see RECHERCHE_GPS_Power_M1.md and PLAN_v6.1.md.
+// FieldMesh: GPS duty cycle (power saving), modelled on Meshtastic (src/gps/GPS.cpp,
+// GPSUpdateScheduling.cpp).
 //
-// While GPS is enabled the receiver is not kept on all the time any more:
+// While GPS is enabled the receiver is not kept on all the time:
 //   - every 2 min a search for a fix, then the fix is held for 20 s, then the GPS sleeps
 //   - the wake-up is moved forward by the learned search time (EWMA 0.2), so a new fix is
 //     available about every 2 min; no long back-off when there is no fix
@@ -11,31 +11,29 @@
 //   - with GSV data (sky check) the search after a failure is graded by what the receiver
 //     sees - "strong" = satellite with >= 25 dB-Hz, counted per one-second epoch:
 //       no strong satellite                  -> 15 s, then give up (indoors)
-//       1..3 strong                          -> up to 30 s (a fix needs 4; 3 such searches
-//                                               in a row, then 15 s - window case)
+//       1..3 strong                          -> up to 30 s (a fix needs 4; after 3 such
+//                                               searches in a row 15 s - typical at a window)
 //       >= 4 strong at any time of the search -> up to 120 s: the sky is there and only
 //       and >= 2 of them >= 30 dB-Hz            time is missing (expired ephemeris needs
 //                                               18..50 s of uninterrupted reception, and
 //                                               decoding gets unreliable below ~27 dB-Hz)
 //     A longer search ends at once with the fix, or when no strong satellite was seen for
-//     15 s (back indoors - no back-off then). After a failed 120 s search the next one is allowed after 4, then
-//     8, then 16 min (back to 4 after a fix or 30 min without failed 120 s search); in
-//     between >= 4 strong is handled like 1..3. The count of 30 s searches is only cleared
-//     by a fix or after 30 min.
-//     Field test T1000-E 22.10. at an office window: 4..5 satellites with 25..32 dB-Hz (at
-//     most 1 >= 30) never gave a fix, but the 120 s stage kept the GPS on ~65 % of the time.
-//     Clear sky (>= 4 satellites >= 30 dB-Hz in one epoch, never seen at a window): never
-//     only 15 s (at least 30 s, also when the 30 s budget is used up), and when the previous
-//     search also had clear sky without fix, up to 240 s even during the back-off - at most
-//     once per 30 min (field test 23.10.: walking after 3 h indoors, jacket pocket, 14..20
-//     strong satellites, two 120 s searches without fix while new ephemeris was needed).
-//     Field test T1000-E 22.10. (urban canyon): 15 s searches with 4..11 strong satellites
-//     never gave a fix, the first one came after 1 h 48 min.
+//     15 s (back indoors - no back-off then). After a failed 120 s search the next one is
+//     allowed after 4, then 8, then 16 min (back to 4 after a fix or 30 min without a failed
+//     120 s search); in between >= 4 strong is handled like 1..3. The count of 30 s searches
+//     is only cleared by a fix or after 30 min.
+//     The 120 s stage needs two satellites >= 30 dB-Hz because at a window 4..5 satellites
+//     at 25..32 dB-Hz rarely give a fix and would otherwise keep the GPS on most of the time.
+//     Clear sky (>= 4 satellites >= 30 dB-Hz in one epoch, practically never seen at a
+//     window): never only 15 s (at least 30 s, also when the 30 s budget is used up), and
+//     when the previous search also had clear sky without fix, up to 240 s even during the
+//     back-off - at most once per 30 min. This covers going outside after hours indoors,
+//     when new ephemeris is needed and two 120 s searches can still end without a fix.
 //   - without GSV data: 30 s, after 3 failures 15 s, never less than twice the learned
 //     search time, a blind 120 s search on every 5th failure
-//   - fast movement (decided 23.10.): a fix with >= 30 km/h (RMC speed over ground) makes the
-//     cycle measure every 60 s instead of 120 s, for 3 min after the last such fix (traffic
-//     lights, short stops). Applies whenever GPS is on; tracking then also sends every 60 s.
+//   - fast movement: a fix with >= 30 km/h (RMC speed over ground) makes the cycle measure
+//     every 60 s instead of 120 s, for 3 min after the last such fix (traffic lights, short
+//     stops). Applies whenever GPS is on; tracking then also sends every 60 s.
 //   - "keep awake" requests (GPS/Tracking page on screen, SOS) keep the GPS running
 //
 // Sleep mode is chosen centrally from the board defines, like Meshtastic:
@@ -45,15 +43,15 @@
 //                              "gps" setting (Airoha RTC backup on T1000-E/X1, power off on
 //                              Heltec T1)
 // Boards that cannot switch their GPS off (no standby/enable pin, e.g. T-Beam with PMU,
-// T-Deck, Station G2/G3, XIAO C3) keep it running as in v2.0; the cycle then only tracks
-// fix freshness and reports a position about every 2 min.
+// T-Deck, Station G2/G3, XIAO C3) keep it running; the cycle then only tracks fix freshness
+// and reports a position about every 2 min.
 // Board files are not modified. Without provider or "gps" setting the cycle stays off.
 //
 // NMEA output is reduced to GGA + RMC + GSV (GSV for the sky check), only for the two known
 // receiver families: L76K ($PCAS03) and Airoha ($PAIR062, saved once per boot with $PAIR513).
 // Sent after every GPS start/wake as soon as the receiver talks (first valid sentence), not
-// relying on the receiver keeping it - field test T1000-E 21.10.: a once-per-boot command
-// never showed any GSV (receiver may have "GSV off" saved, e.g. by other firmware).
+// relying on the receiver keeping it: a receiver may have "GSV off" saved (e.g. by other
+// firmware), and a once-per-boot command is not enough then.
 // Airoha acknowledgements ($PAIR001) are kept for the diagnostic log.
 // All satellite systems the receiver can use are switched on (like Meshtastic):
 //   L76K   $PCAS04,7 = GPS + BeiDou + GLONASS (all it supports), once per GPS start
@@ -73,7 +71,7 @@
 #include <Arduino.h>
 #include <helpers/SensorManager.h>
 #include "NodePrefs.h"
-#include "GpsPosition.h"   // v2.3: plausibility check of the position
+#include "GpsPosition.h"   // plausibility check of the position
 
 class GpsCycle {
 public:
@@ -93,7 +91,7 @@ public:
   static constexpr uint32_t FAST_KEEP_MS       = 180000;  // stay fast this long after the last fast fix
   static constexpr uint32_t HOLD_MS            = 20000;   // keep running 20 s after a fix
   static constexpr uint32_t MAX_FIX_AGE_MS     = 120000;  // never use an older position
-  // wake a bit early -> fix age stays < 2 min (field logs with 5 s: 102..126 s before the next fix)
+  // wake a bit early -> fix age stays < 2 min (with 5 s the next fix came after 102..126 s)
   static constexpr uint32_t WAKE_MARGIN_MS     = 12000;
   static constexpr uint32_t SEARCH_FIRST_MS    = 180000;  // first search after GPS start
   static constexpr uint32_t SEARCH_MS          = 30000;
@@ -149,7 +147,7 @@ private:
     if (!enabled) {
       // GPS was switched off by the user/app/switch: their code already stopped the
       // hardware; the cycle only forgets its state.
-      // v2.2: a pending SOS resend survives until its window ends (M1: switch turned on
+      // a pending SOS resend survives until its window ends (M1: switch turned on
       // after the SOS -> the first fix is still reported)
       _state = OFF;
       if (_sos_pending && (int32_t)(now - _sos_until) > 0) _sos_pending = false;
@@ -281,7 +279,7 @@ public:
     _sos_until = millis() + KEEP_AWAKE_SOS_MS;
   }
 
-  // v2.2: the radio moved to another network (Off-Grid toggle, new radio parameters) - a
+  // the radio moved to another network (Off-Grid toggle, new radio parameters) - a
   // pending resend would reach people who never got the first SOS, so it is dropped
   void cancelSosResend() { _sos_pending = false; }
 
@@ -439,8 +437,8 @@ private:
     else limit = SEARCH_MS;
     // receivers that need longer per fix (e.g. no backup power during hard sleep) get at
     // least twice their learned search time, otherwise nearly every search would fail.
-    // (With GSV the graded search below decides instead - field test: 24.8 s instead of 15 s
-    // kept the GPS on 36 % of a night indoors.)
+    // (With GSV the graded search below decides instead: without the sky check, a longer
+    // limit indoors would keep the GPS on for a large part of the night.)
     if (limit < 2 * _predicted_ms) limit = 2 * _predicted_ms;
     return limit;
   }
@@ -478,8 +476,8 @@ private:
         && _search_limit < SEARCH_LONG_MS
         && (_ext_level == 0 || (int32_t)(now - _ext_block_until) >= 0))
       return STAGE_LONG;
-    // under clear sky never only 15 s, even when the 30 s budget is used up (field test 23.10.:
-    // walking back with 18 strong satellites the search ended after 15 s)
+    // under clear sky never only 15 s, even when the 30 s budget is used up (with many strong
+    // satellites a 15 s search ends just before the fix would come)
     if (clear && !_mid && _search_limit < SEARCH_MID_MS) return STAGE_MID;
     if (!_mid && _search_limit < SEARCH_MID_MS && _mid_count < MID_MAX) return STAGE_MID;
     return STAGE_NONE;
@@ -495,8 +493,8 @@ private:
     if (_search_max_good >= CLEAR_MIN_GOOD) { if (_clear_streak < 255) _clear_streak++; } else _clear_streak = 0;
     if (reason == END_LOST) {
       // the sky went away (back indoors): says nothing about a hopeless sky - no back-off, the
-      // 30 s budget is not used up (field test 24.10.: balcony, back in, out of the front door -
-      // the block from the balcony made the search outside only 30 s, fix ~2 min later)
+      // 30 s budget is not used up (otherwise a short stay outside would shorten the next
+      // search when going out again)
     } else if (_extended) {   // sky but no fix after the whole long search -> back-off 4, 8, 16 min
       if (_ext_level < EXT_BLOCK_STEPS) _ext_level++;
       _ext_block_until = now + (EXT_BLOCK_MIN_MS << (_ext_level - 1));
@@ -641,7 +639,7 @@ private:
     uint32_t ts = (uint32_t)loc->getTimestamp();
     if (ts == _last_ts) return false;   // nothing newly parsed since the last accepted fix
     _last_ts = ts;
-    // v2.3: a "fix" from a broken sentence (position outside +-90/+-180 degrees) is no fix
+    // a "fix" from a broken sentence (position outside +-90/+-180 degrees) is no fix
     long lat = loc->getLatitude();
     long lon = loc->getLongitude();
     if (!fmGpsPositionInRange(lat, lon)) return false;
@@ -742,7 +740,7 @@ private:
 #endif
   }
 
-  // ThinkNode M1: hardware switch has priority (PLAN_v6.1: GPS runs only with switch AND setting).
+  // ThinkNode M1: hardware switch has priority (GPS runs only with switch AND setting).
   // The board itself starts/stops GPS on switch edges; here: switching on also sets the
   // setting, and while the switch is off nothing (app, prefs) may keep GPS running.
   uint8_t checkHardwareSwitch(SensorManager& sensors, NodePrefs& prefs) {

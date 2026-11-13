@@ -120,7 +120,7 @@ void MyMesh::fmClockSaveLoop() {
   if (ok && fmFsCommit(_fs, FM_CLOCK_FILE)) _fm_clock_saved = now;
 }
 
-// ── Off-Grid managed flooding (v2.2, FloodPolicy.h) ──────────────────────────
+// ── Off-Grid managed flooding (FloodPolicy.h) ────────────────────────────────
 // Only while Off-Grid; normal operation keeps the upstream behaviour.
 // The box always relays (never cancels) but behaves like Meshtastic ROUTER_LATE: it starts with
 // the same SNR-weighted delay as the companions and, if another node relays first, moves its
@@ -170,7 +170,7 @@ void MyMesh::fmOnNetworkChange() {
 // Off-Grid: the box relays every flood. The region / scope rules of normal operation (unknown
 // scope, flooding without scope denied for the wildcard) and the hop limits for un-scoped packets
 // and adverts (flood.max.unscoped, flood.max.advert) are local network policy - in Off-Grid all
-// FieldMesh companions send without scope (#25), so these rules would make the box silent.
+// FieldMesh companions send without scope (issue #25), so these rules would make the box silent.
 // Still applied: 'set repeat off' (disable_fwd), the general flood.max limit and loop detection.
 void MyMesh::fmOffGridRegion(const mesh::Packet* pkt) {
   if (_fm.offgrid && pkt->isRouteFlood()) recv_pkt_region = &region_map.getWildcard();

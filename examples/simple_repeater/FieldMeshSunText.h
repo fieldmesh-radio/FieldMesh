@@ -1,5 +1,5 @@
 #pragma once
-// FieldMesh repeater: sun times for the room command '!sun' / '!sonne' (after Tobias' SunCast):
+// FieldMesh repeater: sun times for the room command '!sun' / '!sonne':
 // sunrise, sunset and "daylight until", for today or tomorrow.
 // Plain C++ without Arduino/MeshCore, so the maths can be tested on a PC
 // (test/test_fieldmesh_sun). Everything is computed offline from the box position and the

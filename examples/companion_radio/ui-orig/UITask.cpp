@@ -12,12 +12,12 @@
 #define LED_CYCLE_MILLIS  4000
 #endif
 
-// v2.2: single LED (T1000-E), RECHERCHE_LED_Buzzer_Headless.md section 7
+// single LED (T1000-E)
 #define LED_BOOT_MILLIS       2000   // LED on after start
 #define LED_SOS_BLINK_MILLIS   100   // received SOS: fast blink (on/off each 100 ms)
 
-// v2.2: tracking "breath" (single LED, nRF52), played by the PWM hardware from a table (see
-// ledBreathStart()). Slow and with only a short pause between breaths (Tobias, 30.10.2026)
+// tracking "breath" (single LED, nRF52), played by the PWM hardware from a table (see
+// ledBreathStart()). Slow and with only a short pause between breaths
 #define LED_BREATH_MILLIS      4000   // one breath, in + out
 #define LED_BREATH_PAUSE_MILLIS 300   // LED off between two breaths
 #define LED_BREATH_STEP_MILLIS   20   // brightness changes every 20 ms
@@ -29,8 +29,8 @@
 #ifndef LOW_BATT_MILLIVOLTS
 #define LOW_BATT_MILLIVOLTS 3500
 #endif
-// v2.3: RGB LED (X1), RECHERCHE_LED_Buzzer_Headless.md section 7, values tuned with Tobias in the
-// browser simulator (05.11.2026). Colours are 0..255 per channel.
+// RGB LED (X1), values tuned in a browser simulation of the patterns. Colours are 0..255 per
+// channel.
 #define RGB_FLASH_LEVEL      153   // mode flash and red battery flash
 #define RGB_AMBER_G           89   // Off-Grid amber = red 255 + this much green
 #define RGB_BATT_GAP_MILLIS  400   // red battery flash this long after the mode flash / the breath
@@ -40,14 +40,14 @@
 #endif
 
 #ifdef HAS_DRV2605
-#define SOS_VIB_REPEAT_MILLIS 5000   // v2.3: received SOS vibrates again every 5 s (X1)
+#define SOS_VIB_REPEAT_MILLIS 5000   // received SOS vibrates again every 5 s (X1)
 #endif
 
 #ifndef USER_BTN_PRESSED
 #define USER_BTN_PRESSED LOW
 #endif
 
-// v2.2: SOS by click + hold (RECHERCHE_LED_Buzzer_Headless.md 7a)
+// SOS by click + hold
 #define SOS_HOLD_MILLIS        5000   // hold this long to send
 #define SOS_BEEP_FIRST_MILLIS  1000   // countdown beep interval at the start ...
 #define SOS_BEEP_LAST_MILLIS    150   // ... and at the end
@@ -112,11 +112,11 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
   _userButton->onDoublePress([this]() { handleButtonDoublePress(); });
   _userButton->onTriplePress([this]() { handleButtonTriplePress(); });
   _userButton->onQuadruplePress([this]() { handleButtonQuadruplePress(); });
-  _userButton->onQuintuplePress([this]() { handleButtonQuintuplePress(); });  // V2.02
+  _userButton->onQuintuplePress([this]() { handleButtonQuintuplePress(); });
   _userButton->onLongPress([this]() { handleButtonLongPress(); });
   _userButton->onAnyPress([this]() { handleButtonAnyPress(); });
-  _userButton->onClickHoldStart([this]() { handleButtonClickHoldStart(); });   // v2.2
-  _userButton->onClickHoldEnd([this]() { handleButtonClickHoldEnd(); });       // v2.2
+  _userButton->onClickHoldStart([this]() { handleButtonClickHoldStart(); });
+  _userButton->onClickHoldEnd([this]() { handleButtonClickHoldEnd(); });
 #endif
 
   // Initialize analog button if available
@@ -129,11 +129,11 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
   _userButtonAnalog->onDoublePress([this]() { handleButtonDoublePress(); });
   _userButtonAnalog->onTriplePress([this]() { handleButtonTriplePress(); });
   _userButtonAnalog->onQuadruplePress([this]() { handleButtonQuadruplePress(); });
-  _userButtonAnalog->onQuintuplePress([this]() { handleButtonQuintuplePress(); });  // V2.02
+  _userButtonAnalog->onQuintuplePress([this]() { handleButtonQuintuplePress(); });
   _userButtonAnalog->onLongPress([this]() { handleButtonLongPress(); });
   _userButtonAnalog->onAnyPress([this]() { handleButtonAnyPress(); });
-  _userButtonAnalog->onClickHoldStart([this]() { handleButtonClickHoldStart(); });   // v2.2
-  _userButtonAnalog->onClickHoldEnd([this]() { handleButtonClickHoldEnd(); });       // v2.2
+  _userButtonAnalog->onClickHoldStart([this]() { handleButtonClickHoldStart(); });
+  _userButtonAnalog->onClickHoldEnd([this]() { handleButtonClickHoldEnd(); });
 #endif
   ui_started_at = millis();
 }
@@ -202,9 +202,9 @@ void UITask::onMessageRecv(mesh::Packet *pkt, const ContactInfo &from, uint8_t t
 }
 
 void UITask::onChannelMessageRecv(mesh::Packet *pkt, ChannelDetails& channel_details, const char* text) {
-  // V5: SOS-Erkennung — "!SOS" irgendwo im Text (MeshCore stellt Node-Name voran)
-  // V6: moved here from MyMesh::onChannelMessageRecv() (listener architecture)
-  // v2.1: only in the SOS channel (where sendSOS() sends) - "!SOS" in Public etc. is a normal message
+  // SOS detection - "!SOS" anywhere in the text (MeshCore puts the node name in front)
+  // handled here, not in MyMesh (MyMesh::Listener)
+  // only in the SOS channel (where sendSOS() sends) - "!SOS" in Public etc. is a normal message
   if (strstr(text, "!SOS") != NULL && MyMesh::isSosChannel(channel_details.name)) {
     triggerSOS(channel_details.name, text);
     return;
@@ -228,7 +228,7 @@ void UITask::onChannelMessageRecv(mesh::Packet *pkt, ChannelDetails& channel_det
     }
   }
   if (!hasConnection()) {
-    // V5: favourites get the distinct (contact message) tone
+    // favourites get the distinct (contact message) tone
     notify(the_mesh.isSenderFavorite(text) ? UIEventType::contactMessage : UIEventType::channelMessage);
   }
 }
@@ -352,9 +352,9 @@ void UITask::renderCurrScreen() {
 }
 
 #ifdef STATUS_LED_RGB
-// v2.3 (X1): the RGB LED is driven like the T1000-E breath (v2.2): one PWM module plays a table
-// from RAM (EasyDMA), the CPU only starts it, and the module is handed back when the LED is
-// off (a running module keeps the 16 MHz clock on). analogWrite() is no longer used for it.
+// X1: the RGB LED is driven like the T1000-E breath: one PWM module plays a table from RAM
+// (EasyDMA), the CPU only starts it, and the module is handed back when the LED is off (a
+// running module keeps the 16 MHz clock on). analogWrite() is not used for it.
 // Three channels: R, G, B in the "individual" decoder mode (4 values per step).
 // PWM2 is never used - tone() (buzzer) owns it.
 #define LED_RGB_TOP     2000   // PWM counter top: 4 MHz / 2000 = 2 kHz
@@ -485,15 +485,14 @@ static void ledRgbDigital(bool r, bool g, bool b) {   // full on/off without PWM
 
 #if defined(PIN_STATUS_LED) && !defined(STATUS_LED_RGB) && defined(NRF52_PLATFORM)
 #define LED_BREATH_HW 1
-// v2.2: the tracking breath is played by a PWM module straight from a table in RAM (EasyDMA,
-// one value per LED_BREATH_STEP_MILLIS) - the CPU only starts it. The first version wrote
-// the PWM from the loop (analogWrite() on every pass, each one restarting the PWM sequence)
-// and depended on the loop waking up in time; on the T1000-E it looked uneven and was now and
-// then broken by a short bright flash (30.10.2026, cause not pinned down). Now nothing in the
-// firmware touches the LED during a breath.
+// the tracking breath is played by a PWM module straight from a table in RAM (EasyDMA,
+// one value per LED_BREATH_STEP_MILLIS) - the CPU only starts it. Writing the PWM from the
+// loop (analogWrite() on every pass) depends on the loop waking up in time and looks uneven,
+// with an occasional bright flash; here nothing in the firmware touches the LED during a
+// breath.
 // The module is taken with its own owner token only for the breath and handed back
-// afterwards: a running PWM module keeps the 16 MHz clock on (checked on the T1000-E,
-// 29.10.2026). PWM2 is never used - tone() (buzzer) owns it.
+// afterwards: a running PWM module keeps the 16 MHz clock on (measured on the T1000-E).
+// PWM2 is never used - tone() (buzzer) owns it.
 #define LED_BREATH_TOP     2000   // PWM counter top: 4 MHz / 2000 = 2 kHz, 2000 brightness levels
 #define LED_BREATH_STEPS   (LED_BREATH_MILLIS / LED_BREATH_STEP_MILLIS)
 #define LED_BREATH_REFRESH (LED_BREATH_STEP_MILLIS * 2 - 1)   // extra PWM periods per value (2 kHz)
@@ -586,7 +585,7 @@ static void ledPwmRelease() { }   // no hardware breath on this platform: tracki
 #endif
 
 void UITask::userLedHandler() {
-  // v2.2: SOS countdown - LED blinks with each beep (T1000-E green, X1 red)
+  // SOS countdown - LED blinks with each beep (T1000-E green, X1 red)
   static bool countdown_led = false;
   if (_sos_holding) {
     bool on = (millis() - _sos_last_beep) < SOS_LED_ON_MILLIS;
@@ -609,10 +608,10 @@ void UITask::userLedHandler() {
   }
 
 #ifdef STATUS_LED_RGB
-  // v2.3 (X1), RECHERCHE_LED_Buzzer_Headless.md section 7. Priority: SOS > charging/full > mode.
+  // X1. Priority: SOS > charging/full > mode.
   // Mode colour green (normal) or amber (Off-Grid): a short flash every 4 s, while tracking a
   // breath in the mode colour; battery low adds a red second flash. Unread messages, the app
-  // connection and the colour sweeps of upstream are no longer shown.
+  // connection and the colour sweeps of upstream are not shown.
   enum { SHOW_NONE, SHOW_FLASH, SHOW_BREATH, SHOW_CHARGE, SHOW_FULL };
   static uint8_t shown = SHOW_NONE;
   static unsigned long next_flash = 0, red_at = 0, next_batt_check = 0;
@@ -698,8 +697,8 @@ void UITask::userLedHandler() {
   red_pending = low_batt;
   next_flash = now + cycle;
 #elif defined(PIN_STATUS_LED)
-  // v2.2 (T1000-E): boot 2 s on, received SOS fast blink, tracking breath, otherwise
-  // a short flash every 4 s. Unread messages are no longer shown.
+  // T1000-E: boot 2 s on, received SOS fast blink, tracking breath, otherwise a short flash
+  // every 4 s. Unread messages are not shown.
   static bool flash_on = false;
   static unsigned long next_change = 0;
   static bool led_held = false;   // boot light / SOS blink may have left the LED on
@@ -758,9 +757,9 @@ void UITask::userLedHandler() {
 */
 void UITask::shutdown(bool restart){
 #if defined(PIN_STATUS_LED) && !defined(STATUS_LED_RGB)
-  ledPwmRelease();   // v2.2: the board may drive the LED pin while powering off
+  ledPwmRelease();   // the board may drive the LED pin while powering off
 #elif defined(STATUS_LED_RGB)
-  ledRgbRelease();   // v2.3: same for the X1 (powerOff() writes the green pin)
+  ledRgbRelease();   // same for the X1 (powerOff() writes the green pin)
 #endif
 
   #ifdef PIN_BUZZER
@@ -795,22 +794,22 @@ void UITask::loop() {
       _userButtonAnalog->update();
     }
   #endif
-  if (_sos_holding) sosCountdownLoop();   // v2.2
+  if (_sos_holding) sosCountdownLoop();
   userLedHandler();
 #ifdef HAS_DRV2605
-  if (_sos_active && millis() - _sos_vib_at >= SOS_VIB_REPEAT_MILLIS) vibrateForced();   // v2.3
+  if (_sos_active && millis() - _sos_vib_at >= SOS_VIB_REPEAT_MILLIS) vibrateForced();
 #endif
 
 #ifdef PIN_BUZZER
   if (buzzer.isPlaying()) {
     buzzer.loop();
-  } else if (!_sos_holding) {   // v2.2: countdown beeps must stay audible
-    // V5: restore quiet state after a forced tone has finished playing
+  } else if (!_sos_holding) {   // countdown beeps must stay audible
+    // restore quiet state after a forced tone has finished playing
     if (_buzzer_restore_quiet) {
       buzzer.quiet(_node_prefs->buzzer_quiet);
       _buzzer_restore_quiet = false;
     }
-    // V5: keep SOS siren looping until acknowledged
+    // keep SOS siren looping until acknowledged
     if (_sos_active) {
       buzzer.play("siren:d=8,o=5,b=100:d,e,d,e,d,e,d,e");
     }
@@ -863,7 +862,7 @@ void UITask::handleButtonAnyPress() {
 void UITask::handleButtonShortPress() {
   MESH_DEBUG_PRINTLN("UITask: short press triggered");
 
-  // V5: SOS alarm takes priority — short press acknowledges
+  // SOS alarm takes priority — short press acknowledges
   if (_sos_active) {
     _sos_active = false;
 #ifdef PIN_BUZZER
@@ -910,8 +909,8 @@ void UITask::handleButtonDoublePress() {
 
 void UITask::handleButtonTriplePress() {
   MESH_DEBUG_PRINTLN("UITask: triple press triggered");
-  // v2.2: buzzer on/off only, on all devices (the X1 Buzz+Vibe cycle from upstream is gone,
-  // vibe_quiet is no longer changed by the button)
+  // buzzer on/off only, on all devices (unlike upstream's X1 Buzz+Vibe cycle, the
+  // button does not change vibe_quiet)
 #if defined(PIN_BUZZER)
   if (buzzer.isQuiet()) {
     buzzer.quiet(false);
@@ -935,17 +934,17 @@ void UITask::handleButtonTriplePress() {
 void UITask::handleButtonQuadruplePress() {
   MESH_DEBUG_PRINTLN("UITask: quad press triggered");
   if (_sensors != NULL) {
-    // v2.2: GPS and tracking (GPS-Share) together: both on -> both off, otherwise both on.
+    // GPS and tracking (GPS-Share) together: both on -> both off, otherwise both on.
     // GPS without tracking stays possible via the app
     int num = _sensors->getNumSettings();
     for (int i = 0; i < num; i++) {
       if (strcmp(_sensors->getSettingName(i), "gps") == 0) {
-        // v2.1: decide by the setting (the board reports "0" while the GPS duty cycle sleeps)
+        // decide by the setting (the board reports "0" while the GPS duty cycle sleeps)
         // and store it, so the choice survives a reboot
         if (_node_prefs->gps_enabled && the_mesh.isAutoAdvertEnabled()) {
           _sensors->setSettingValue("gps", "0");
           _node_prefs->gps_enabled = 0;
-          the_mesh.setGPSAdvertEnabled(false);   // v2.2: tracking off too (saves prefs)
+          the_mesh.setGPSAdvertEnabled(false);   // tracking off too (saves prefs)
           sprintf(_alert, "GPS: Disabled");
 #ifdef PIN_BUZZER
           buzzer.quiet(false);
@@ -955,7 +954,7 @@ void UITask::handleButtonQuadruplePress() {
         } else {
           _sensors->setSettingValue("gps", "1");
           _node_prefs->gps_enabled = 1;
-          the_mesh.setGPSAdvertEnabled(true);    // v2.2: tracking on too (saves prefs)
+          the_mesh.setGPSAdvertEnabled(true);    // tracking on too (saves prefs)
           sprintf(_alert, "GPS: Enabled");
 #ifdef PIN_BUZZER
           buzzer.quiet(false);
@@ -964,7 +963,7 @@ void UITask::handleButtonQuadruplePress() {
 #endif
         }
         the_mesh.savePrefs();
-        vibrateForced();   // v2.3: X1 confirms mode changes
+        vibrateForced();   // X1 confirms mode changes
         break;
       }
     }
@@ -974,7 +973,7 @@ void UITask::handleButtonQuadruplePress() {
 
 void UITask::handleButtonQuintuplePress() {
   MESH_DEBUG_PRINTLN("UITask: quintuple press triggered");
-  // V2.02: off-grid toggle — buzzer feedback forced regardless of buzzer_quiet
+  // off-grid toggle — buzzer feedback forced regardless of buzzer_quiet
   the_mesh.toggleOffGrid();
 #ifdef PIN_BUZZER
   buzzer.quiet(false);
@@ -983,9 +982,9 @@ void UITask::handleButtonQuintuplePress() {
   } else {
     buzzer.play("offgrid_off:d=16,o=6,b=200:e,c");  // descending = off
   }
-  _buzzer_restore_quiet = true;  // V5: restore quiet state after playback
+  _buzzer_restore_quiet = true;  // restore quiet state after playback
 #endif
-  vibrateForced();   // v2.3: X1 confirms mode changes
+  vibrateForced();   // X1 confirms mode changes
   _need_refresh = true;
 }
 
@@ -999,7 +998,7 @@ void UITask::handleButtonLongPress() {
 }
 // ── SOS ───────────────────────────────────────────────────────────────────────
 
-// v2.2: plays a tone even while the buzzer is quiet (quiet state is restored afterwards)
+// plays a tone even while the buzzer is quiet (quiet state is restored afterwards)
 void UITask::playForced(const char* melody) {
 #ifdef PIN_BUZZER
   buzzer.quiet(false);
@@ -1010,7 +1009,7 @@ void UITask::playForced(const char* melody) {
 #endif
 }
 
-// v2.3: vibration even while it is switched off (X1: SOS and mode changes, section 7)
+// vibration even while it is switched off (X1: SOS and mode changes)
 void UITask::vibrateForced() {
 #ifdef HAS_DRV2605
   bool q = vibration.isQuiet();
@@ -1021,7 +1020,7 @@ void UITask::vibrateForced() {
 #endif
 }
 
-// v2.2: click + hold started - countdown to SOS (RECHERCHE_LED_Buzzer_Headless.md 7a).
+// click + hold started - countdown to SOS.
 // A received SOS alarm keeps running (no short press was triggered).
 void UITask::handleButtonClickHoldStart() {
   MESH_DEBUG_PRINTLN("UITask: click + hold -> SOS countdown");
@@ -1031,7 +1030,7 @@ void UITask::handleButtonClickHoldStart() {
   _sos_last_beep = 0;
 }
 
-// v2.2: released before the countdown ended - nothing is sent
+// released before the countdown ended - nothing is sent
 void UITask::handleButtonClickHoldEnd() {
   if (!_sos_holding) return;   // already sent
   MESH_DEBUG_PRINTLN("UITask: SOS countdown cancelled");
@@ -1039,7 +1038,7 @@ void UITask::handleButtonClickHoldEnd() {
   playForced("sos_cancel:d=16,o=5,b=200:e,c");   // short descending tone
 }
 
-// v2.2: countdown beeps get faster; after SOS_HOLD_MILLIS the SOS is sent
+// countdown beeps get faster; after SOS_HOLD_MILLIS the SOS is sent
 void UITask::sosCountdownLoop() {
   unsigned long now = millis();
   unsigned long held = now - _sos_hold_start;
@@ -1054,7 +1053,7 @@ void UITask::sosCountdownLoop() {
     } else {
       MESH_DEBUG_PRINTLN("UITask: SOS failed (no SOS channel?)");
       playForced("sos_fail:d=16,o=4,b=140:c,p,c,p,c");   // three short low tones
-      _sos_fail_at = millis() | 1;                           // v2.3: X1 red double blink
+      _sos_fail_at = millis() | 1;                           // X1 red double blink
       sprintf(_alert, "No SOS channel!");
     }
     _need_refresh = true;
@@ -1071,11 +1070,11 @@ void UITask::sosCountdownLoop() {
   }
 }
 
-// V5: SOS alarm received — siren loops until short press
-// Called by UITask::onChannelMessageRecv() when !SOS is detected (V6: listener)
+// SOS alarm received — siren loops until short press
+// Called by UITask::onChannelMessageRecv() when !SOS is detected
 void UITask::triggerSOS(const char* from, const char* text) {
   _sos_active = true;
-  vibrateForced();   // v2.3: X1, repeated in loop() until acknowledged
+  vibrateForced();   // X1, repeated in loop() until acknowledged
 #ifdef PIN_BUZZER
   // override buzzer_quiet — SOS is an emergency
   buzzer.quiet(false);

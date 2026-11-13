@@ -10,9 +10,9 @@
 #include <Arduino.h>
 #include <Mesh.h>
 #include "ChannelText.h"   // FieldMesh: sender name / SOS channel rules
-#include "OffGrid.h"       // FieldMesh v2.1: off-grid frequency follows the region of the normal frequency
-#include "FloodPolicy.h"   // FieldMesh v2.2: Off-Grid managed flooding
-#include "FloodLog.h"      // FieldMesh v2.2: flooding diagnostics (only with -D FM_FLOOD_LOG=1)
+#include "OffGrid.h"       // FieldMesh: off-grid frequency follows the region of the normal frequency
+#include "FloodPolicy.h"   // FieldMesh: Off-Grid managed flooding
+#include "FloodLog.h"      // FieldMesh: flooding diagnostics (only with -D FM_FLOOD_LOG=1)
 
 // Auto-advert interval: 5 minutes in milliseconds
 // To change, adjust the 5 and recompile
@@ -20,17 +20,17 @@
 
 // ── Channel messages ─────────────────────────────────────────────────────────
 
-// ── V5: Helper — extract sender name from channel message text ─────────────
-// MeshCore-Format: "NodeName: text"
+// ── Helper — extract sender name from channel message text ────────────────
+// MeshCore format: "NodeName: text"
 // Returns true if a name was found; out_name is filled in.
-// Only ": " is used as separator — node names like "Juno48 | DE.BW" contain " | " as part of the name.
+// Only ": " is used as separator — node names like "Alice | DE.BW" contain " | " as part of the name.
 bool MyMesh::extractSenderName(const char* text, char* out_name, int max_len) {
   return fmExtractSenderName(text, out_name, max_len);   // ChannelText.h (unit-tested)
 }
 
-// V5: Favourite check for channel messages.
+// Favourite check for channel messages.
 // Extracts the sender name from the text and searches the contact list by name.
-// Namens-Kollision (zwei Kontakte gleicher Name): erster Treffer gewinnt — akzeptiertes Risiko.
+// Name collision (two contacts with the same name): the first match wins - accepted risk.
 // IMPORTANT: ContactInfo declared static to avoid stack overflow.
 // With MAX_CONTACTS=350 and a deep call stack (BaseChatMesh::loop), a local
 // ContactInfo would overflow the nRF52840 stack and crash the BLE stack.
@@ -40,7 +40,7 @@ bool MyMesh::isSenderFavorite(const char* text) {
     return false;
   }
   static ContactInfo contact;  // static: BSS segment, not on the stack
-  // V6: contacts[] now starts with MAX_ANON_CONTACTS reserved anon slots (empty name -> skipped)
+  // contacts[] starts with MAX_ANON_CONTACTS reserved anon slots (empty name -> skipped)
   for (uint32_t i = 0; i < MAX_CONTACTS + MAX_ANON_CONTACTS; i++) {
     if (!getContactByIdx(i, contact)) break;
     if (contact.name[0] == 0) continue;
@@ -51,13 +51,13 @@ bool MyMesh::isSenderFavorite(const char* text) {
   return false;
 }
 
-// V5: Send channel message from UI (without smartphone).
+// Send channel message from UI (without smartphone).
 // Analogous to sendSOS() — wrapper so UITask stays free of getRTCClock() logic.
 bool MyMesh::sendChannelMessage(uint8_t channel_idx, const char* text) {
   if (text == nullptr || text[0] == 0) return false;
   ChannelDetails ch;
   if (!getChannel(channel_idx, ch)) return false;
-  // getCurrentTimeUnique() statt getCurrentTime() — verhindert Replay-Schutz-Probleme
+  // getCurrentTimeUnique() instead of getCurrentTime() - avoids replay-protection problems
   // for rapidly successive messages within the same second
   uint32_t ts = getRTCClock()->getCurrentTimeUnique();
   return sendGroupMessage(ts, ch.channel, _prefs.node_name, text, strlen(text));
@@ -66,22 +66,22 @@ bool MyMesh::sendChannelMessage(uint8_t channel_idx, const char* text) {
 // ── Off-Grid / SOS ───────────────────────────────────────────────────────────
 
 // Off-grid mode: save normal parameters and switch to off-grid settings (or back)
-// FieldMesh v2.1: off-grid frequency follows the region of the normal frequency (OffGrid.h)
+// FieldMesh: off-grid frequency follows the region of the normal frequency (OffGrid.h)
 void MyMesh::toggleOffGrid() {
   if (!_prefs.isRepeatEn()) {
-    // Off-Grid aktivieren: Normal-Parameter sichern
+    // enable Off-Grid: save the normal parameters
     _prefs.normal_freq = _prefs.freq;
     _prefs.normal_bw   = _prefs.bw;
     _prefs.normal_sf   = _prefs.sf;
     _prefs.normal_cr   = _prefs.cr;
-    // Off-Grid-Parameter setzen
+    // set the Off-Grid parameters
     _prefs.freq = offGridFreqFor(_prefs.normal_freq);   // EU < 900 MHz <= US
     _prefs.bw   = OFFGRID_BW;
     _prefs.sf   = OFFGRID_SF;
     _prefs.cr   = OFFGRID_CR;
     _prefs.setRepeatEn(true);
   } else {
-    // Off-Grid deaktivieren: Normal-Parameter wiederherstellen
+    // disable Off-Grid: restore the normal parameters
     // Fallback if normal_freq was never set (first use)
     if (_prefs.normal_freq > 0.0f) {
       _prefs.freq = _prefs.normal_freq;
@@ -91,13 +91,13 @@ void MyMesh::toggleOffGrid() {
     }
     _prefs.setRepeatEn(false);
   }
-  fmOnNetworkChange();   // v2.2: no SOS resend / queued relay into the other network
-  radio_driver.setParams(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr);  // V6: wrapper method (radio_set_params() removed upstream)
+  fmOnNetworkChange();   // no SOS resend / queued relay into the other network
+  radio_driver.setParams(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr);  // wrapper method (radio_set_params() removed upstream)
   savePrefs();
-  advert();  // V4.07: RX restart via normal TX->RX cycle of the wrapper
+  advert();  // RX restart via normal TX->RX cycle of the wrapper
 }
 
-// V3: SOS-Nachricht in den SOS-Channel senden
+// send the SOS message to the SOS channel
 // Searches for a channel named "SOS" and sends "!SOS <pos>" or "!SOS no GPS"
 bool MyMesh::isSosChannel(const char* name) {
   // Case-insensitive: accept "SOS", "sos", "#sos" etc.
@@ -110,9 +110,9 @@ bool MyMesh::sendSOS() {
     if (!getChannel(i, ch)) continue;
     if (!isSosChannel(ch.name)) continue;
 
-    // Nachrichtentext zusammenbauen
+    // build the message text
     char text[80];
-    // FieldMesh v2.1: fresh fix (<= 2 min) from the GPS duty cycle
+    // FieldMesh: fresh fix (<= 2 min) from the GPS duty cycle
     bool has_pos = _gps_cycle.hasFreshFix();
     if (has_pos) {
       snprintf(text, sizeof(text), "!SOS %.4f,%.4f",
@@ -121,7 +121,7 @@ bool MyMesh::sendSOS() {
     } else {
       strncpy(text, "!SOS no GPS", sizeof(text));
     }
-    // FieldMesh v2.1: battery level, same scale as the battery icon of the UI
+    // FieldMesh: battery level, same scale as the battery icon of the UI
 #ifndef BATT_MIN_MILLIVOLTS
   #define BATT_MIN_MILLIVOLTS 3000
 #endif
@@ -140,7 +140,7 @@ bool MyMesh::sendSOS() {
     uint32_t ts = getRTCClock()->getCurrentTimeUnique();
     bool sent = sendGroupMessage(ts, ch.channel, _prefs.node_name, text, strlen(text));
     if (sent) {
-      // FieldMesh v2.2: SOS switches the GPS on and leaves it on (position also helps later
+      // FieldMesh: SOS switches the GPS on and leaves it on (position also helps later
       // telemetry requests). Tracking/GPS-Share stays as it is. ThinkNode M1: the hardware
       // switch keeps priority - the setting is stored, the GPS runs once the switch is on.
       if (!_prefs.gps_enabled && sensors.getSettingByKey("gps") != NULL) {
@@ -169,11 +169,11 @@ void MyMesh::fmBegin() {
   }
 }
 
-// App-Schalter "GPS in Adverts": Timer sofort starten oder stoppen
+// app switch "GPS in adverts": start or stop the timer right away
 void MyMesh::fmUpdateAutoAdvertTimer() {
   if (_prefs.advert_loc_policy == ADVERT_LOC_SHARE) {
-    // V3.05: only start timer if not already running (no reset on phone connect)
-    // Beim ersten Aktivieren: sofort senden + Timer starten
+    // only start timer if not already running (no reset on phone connect)
+    // first activation: send right away + start the timer
     if (next_auto_advert == 0) {
       advert();
       next_auto_advert = futureMillis(AUTO_ADVERT_INTERVAL_MS);
@@ -184,7 +184,7 @@ void MyMesh::fmUpdateAutoAdvertTimer() {
 }
 
 // Enable/disable GPS sharing and auto-advert together (called from UI button)
-// V3.05: only start timer if not already running (no reset on repeated toggle)
+// only start timer if not already running (no reset on repeated toggle)
 void MyMesh::setGPSAdvertEnabled(bool enabled) {
   _prefs.advert_loc_policy = enabled ? ADVERT_LOC_SHARE : ADVERT_LOC_NONE;
   fmUpdateAutoAdvertTimer();
@@ -195,7 +195,7 @@ void MyMesh::setGPSAdvertEnabled(bool enabled) {
 
 // onDiscoveredContact(): advert_paths is always written (RECENT page);
 // gps_timestamp + has_gps only updated when GPS was included in this advert (TRACKING page).
-// V6: GPS-Info kommt aus BaseChatMesh::lastAdvertHasLatLon() (ersetzt Bit 4 in contact.type)
+// GPS info comes from BaseChatMesh::lastAdvertHasLatLon()
 void MyMesh::fmNoteAdvertGps(AdvertPath* p) {
   if (lastAdvertHasLatLon()) {
     p->has_gps = true;
@@ -207,7 +207,7 @@ void MyMesh::fmNoteAdvertGps(AdvertPath* p) {
 mesh::Packet* MyMesh::fmCreateSelfAdvert() {
   bool send_gps = false;
   if (_prefs.advert_loc_policy != ADVERT_LOC_NONE) {
-    // FieldMesh v2.1: fresh fix (<= 2 min) from the GPS duty cycle
+    // FieldMesh: fresh fix (<= 2 min) from the GPS duty cycle
     send_gps = _gps_cycle.hasFreshFix();
   }
   if (send_gps) {
@@ -225,7 +225,7 @@ void MyMesh::fmSendSelfAdvert(mesh::Packet* pkt) {
   }
 }
 
-// ── Off-Grid managed flooding (v2.2, FloodPolicy.h) ──────────────────────────
+// ── Off-Grid managed flooding (FloodPolicy.h) ────────────────────────────────
 // Only while Off-Grid (repeat on); normal operation keeps the upstream behaviour.
 
 // A: wait up to 30 s for a free channel instead of transmitting over others after 4 s.
@@ -269,7 +269,7 @@ void MyMesh::fmFilterRelay(mesh::Packet* packet) {
 // network may be sent into the other one. Relays can wait up to ~22 s (+ busy channel) in
 // Off-Grid. Own queued packets (path 0) stay.
 void MyMesh::fmOnNetworkChange() {
-  _gps_cycle.cancelSosResend();   // v2.2: no SOS resend into the other network
+  _gps_cycle.cancelSosResend();   // no SOS resend into the other network
   int n = fmFloodDropQueuedRelays(*_mgr);
   if (n > 0) MESH_DEBUG_PRINTLN("FieldMesh: network change, %d queued relays dropped", n);
   FM_FLOOD_LOG_EV(NET, NULL, n);
@@ -286,13 +286,13 @@ void MyMesh::logTxFail(mesh::Packet* packet, int len) { FM_FLOOD_LOG_EV(TXF, pac
 // ── Loop: GPS cycle, tracking, auto-advert, clock jump ───────────────────────
 
 void MyMesh::fmLoop() {
-  // FieldMesh v2.1: GPS duty cycle
+  // FieldMesh: GPS duty cycle
   uint8_t gps_ev = _gps_cycle.loop(sensors, _prefs);
   if (gps_ev & GpsCycle::EV_PREFS_CHANGED) savePrefs();
   if (gps_ev & GpsCycle::EV_SOS_RESEND) sendSOS();   // first SOS went out without position
 
-  // FieldMesh v2.1: tracking (GPS sharing + GPS running) -> movement / heartbeat cadence,
-  // otherwise the fixed auto-advert timer as before
+  // FieldMesh: tracking (GPS sharing + GPS running) -> movement / heartbeat cadence,
+  // otherwise the fixed auto-advert timer
   if (isAutoAdvertEnabled() && _gps_cycle.state() != GpsCycle::OFF) {
     if (!_tracking_active) { _track.reset(millis()); _tracking_active = true; }
     if (_track.poll(millis(), (gps_ev & GpsCycle::EV_FIX) != 0, _gps_cycle.latitude(),
@@ -312,7 +312,7 @@ void MyMesh::fmLoop() {
     }
   }
 
-  checkClockJump();  // FieldMesh (#23)
+  checkClockJump();  // FieldMesh (issue #23)
 
 #ifdef FM_FLOOD_LOG
   static unsigned long fm_log_mode_at = 0;   // MODE record every 10 min
@@ -325,7 +325,7 @@ void MyMesh::fmLoop() {
 #endif
 }
 
-// FieldMesh (#23): detect RTC jumps and shift stored timestamps.
+// FieldMesh (issue #23): detect RTC jumps and shift stored timestamps.
 // Without a phone or GPS fix the RTC starts near epoch / at a stale value. When the app
 // (CMD_SET_DEVICE_TIME) or GPS later corrects the clock, timestamps recorded before the
 // correction would yield implausible relative times ("129h"). Instead of hooking every

@@ -24,10 +24,10 @@
 
 #include "DataStore.h"
 #include "NodePrefs.h"
-#include "GpsCycle.h"   // FieldMesh v2.1
-#include "TrackScheduler.h"   // FieldMesh v2.1
-#include "FloodLog.h"   // FieldMesh v2.2 diagnostics (only with -D FM_FLOOD_LOG=1)
-#include "FieldMeshVersion.h"   // FieldMesh v2.2 (#17): FIELDMESH_VERSION, fmAppVersion()
+#include "GpsCycle.h"
+#include "TrackScheduler.h"
+#include "FloodLog.h"   // FieldMesh diagnostics (only with -D FM_FLOOD_LOG=1)
+#include "FieldMeshVersion.h"   // FieldMesh: FIELDMESH_VERSION, fmAppVersion()
 
 #include <RTClib.h>
 #include <helpers/ArduinoHelpers.h>
@@ -111,7 +111,7 @@ public:
       virtual void onTraceRecv(mesh::Packet *pkt, uint32_t tag, uint32_t auth_code, uint8_t flags,
                                const uint8_t *path_snrs, const uint8_t *path_hashes, uint8_t path_len) { }
       virtual void onRawDataRecv(mesh::Packet *pkt) { }
-      // FieldMesh (#23): RTC jumped by delta_secs (app time sync, GPS) — shift stored timestamps
+      // FieldMesh (issue #23): RTC jumped by delta_secs (app time sync, GPS) — shift stored timestamps
       virtual void onClockAdjusted(int32_t delta_secs) { }
       virtual ~Listener() { }
   };
@@ -303,11 +303,11 @@ private:
   // (list: UPSTREAM_SYNC.md). Keeps upstream syncs simple.
   bool _app_initialized = false;        // true after CMD_APP_START handshake completed
   unsigned long next_auto_advert = 0;   // millis() timestamp for next auto-advert (0=inactive)
-  GpsCycle _gps_cycle;             // FieldMesh v2.1: GPS duty cycle + fresh own position
-  TrackScheduler _track;           // FieldMesh v2.1: advert cadence while tracking
+  GpsCycle _gps_cycle;             // FieldMesh: GPS duty cycle + fresh own position
+  TrackScheduler _track;           // FieldMesh: advert cadence while tracking
   bool _tracking_active = false;
 
-  // FieldMesh (#23): RTC jump detection — reference point (RTC seconds + millis) of the last check
+  // FieldMesh (issue #23): RTC jump detection — reference point (RTC seconds + millis) of the last check
   uint32_t _clk_ref_rtc = 0;
   unsigned long _clk_ref_ms = 0;        // 0 = not anchored yet (first loop() sets the reference)
   void checkClockJump();
@@ -331,12 +331,12 @@ private:
   void logTxFail(mesh::Packet* packet, int len) override;
 #endif
 
-  // v2.2 Off-Grid managed flooding: wait for a free channel instead of forcing after 4 s
+  // Off-Grid managed flooding: wait for a free channel instead of forcing after 4 s
   uint32_t getCADFailMaxDuration() const override;
 
 public:
-  GpsCycle& gpsCycle() { return _gps_cycle; }   // FieldMesh v2.1 (UI: keep-awake, own position)
-  uint32_t getRelaySkipped() const { return _fm_relay_skipped; }   // FieldMesh v2.2: Off-Grid flooding counter
+  GpsCycle& gpsCycle() { return _gps_cycle; }   // FieldMesh (UI: keep-awake, own position)
+  uint32_t getRelaySkipped() const { return _fm_relay_skipped; }   // FieldMesh: Off-Grid flooding counter
 
   // Auto-advert is active when GPS sharing is enabled
   bool isAutoAdvertEnabled() const {
@@ -346,23 +346,23 @@ public:
   // Enable/disable GPS sharing and auto-advert together (called from UI button)
   void setGPSAdvertEnabled(bool enabled);
 
-  // Off-Grid Mode: Radio-Parameter sichern/wiederherstellen + client_repeat setzen
+  // Off-Grid mode: save/restore the radio parameters and switch repeat on/off
   bool isOffGridActive() const { return _prefs.isRepeatEn(); }
   void toggleOffGrid();
 
-  // V3: SOS-Nachricht in den SOS-Channel senden
+  // send the SOS message to the SOS channel
   bool sendSOS();
-  // v2.1: SOS channel = name contains "sos" (case-insensitive, e.g. "SOS", "#sos").
+  // SOS channel = name contains "sos" (case-insensitive, e.g. "SOS", "#sos").
   // Used for sending and for the alarm: "!SOS" only raises the alarm in such a channel.
   static bool isSosChannel(const char* name);
 
-  // V5: send channel message from UI (wrapper for sendGroupMessage, analogous to sendSOS)
+  // send channel message from UI (wrapper for sendGroupMessage, analogous to sendSOS)
   bool sendChannelMessage(uint8_t channel_idx, const char* text);
 
-  // V5: favourite check for channel messages (extract sender name from text)
+  // favourite check for channel messages (extract sender name from text)
   bool isSenderFavorite(const char* text);
 
-  // V6: extract sender name from channel message text ("NodeName: text") — used by UI listener
+  // extract sender name from channel message text ("NodeName: text") — used by UI listener
   static bool extractSenderName(const char* text, char* out_name, int max_len);
   // ---- end FieldMesh ----------------------------------------------------------------------
 };

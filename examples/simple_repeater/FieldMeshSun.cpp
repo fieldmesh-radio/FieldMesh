@@ -4,7 +4,7 @@
 // The G2 has no GPS and no internet: the clock and the time zone come from the phones that
 // open the dashboard (FieldMeshWeb.cpp). The whole POSIX rule is kept (FieldMeshTimeZone.h),
 // so local time stays right across a daylight saving change without a phone. Every phone
-// may set it (decision 04.11.2026); the setup page and 'set tz' are the way without a phone.
+// may set it; the setup page and 'set tz' are the way without a phone.
 
 #include "MyMesh.h"
 

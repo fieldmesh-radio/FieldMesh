@@ -319,7 +319,7 @@ protected:
   void onAckRecv(mesh::Packet* packet, uint32_t ack_crc) override;   // ACKs for room post pushes
   int searchChannelsByHash(const uint8_t* hash, mesh::GroupChannel channels[], int max_matches) override;   // channel list of the box
   void onGroupDataRecv(mesh::Packet* packet, uint8_t type, const mesh::GroupChannel& channel, uint8_t* data, size_t len) override;   // SOS -> board
-  // Off-Grid managed flooding (v2.2, FieldMeshRepeater.cpp)
+  // Off-Grid managed flooding (FieldMeshRepeater.cpp)
   uint32_t getCADFailMaxDuration() const override;          // wait for a free channel instead of forcing after 4 s
   bool filterRecvFloodPacket(mesh::Packet* packet) override;   // late window (Meshtastic ROUTER_LATE)
 #endif
@@ -332,7 +332,7 @@ public:
   void begin(FILESYSTEM* fs);
   void sendNodeDiscoverReq();
 #ifdef FIELDMESH_REPEATER
-  const char* getFirmwareVer() override { return fmAppVersion(FIRMWARE_VERSION); }   // FieldMesh #17: "v1.18.0-fm2.2.0"
+  const char* getFirmwareVer() override { return fmAppVersion(FIRMWARE_VERSION); }   // FieldMesh: "v1.18.0-fm2.2.0"
 #else
   const char* getFirmwareVer() override { return FIRMWARE_VERSION; }
 #endif

@@ -2,7 +2,7 @@
 #include <Mesh.h>
 #include "MyMesh.h"
 #ifdef FM_GPS_LOG
-  #include "GpsLog.h"   // FieldMesh v2.1: diagnostic builds only
+  #include "GpsLog.h"   // FieldMesh: diagnostic builds only
   GpsLog gps_log;
 #endif
 
@@ -191,7 +191,7 @@ void setup() {
 
 #ifdef BLE_PIN_CODE // 123456 by default
   if (the_mesh.getNodePrefs()->ble_pin == 0) {
-    // FieldMesh V5: always use static PIN — consistent with devices without a display.
+    // FieldMesh: always use static PIN — consistent with devices without a display.
     // A random PIN on small displays causes layout issues (space needed for message counter).
     the_mesh.setBLEPin(BLE_PIN_CODE);
   } else {

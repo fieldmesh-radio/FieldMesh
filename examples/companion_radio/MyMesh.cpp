@@ -493,7 +493,7 @@ bool MyMesh::allowPacketForward(const mesh::Packet* packet) {
 }
 
 void MyMesh::sendFloodScoped(const TransportKey& scope, mesh::Packet* pkt, uint32_t delay_millis) {
-  // FieldMesh (#25): Off-Grid / client repeat always floods un-scoped, so every node
+  // FieldMesh (issue #25): Off-Grid / client repeat always floods un-scoped, so every node
   // on the off-grid frequency relays it regardless of default-scope / region settings
   if (scope.isNull() || _prefs.isRepeatEn()) {
     sendFlood(pkt, delay_millis, _prefs.path_hash_mode + 1);
@@ -1042,10 +1042,10 @@ static FreqRange repeat_freq_ranges[] = {
   #ifdef ALLOWED_REPEAT_FREQ_RANGE
   ALLOWED_REPEAT_FREQ_RANGE
   #else
-  // FieldMesh: erweiterte Bereiche (Upstream: nur Einzelfrequenzen)
-  { 433050, 434790 },  // EU 433 MHz ISM-Band (SRD, legal ab 433.050)
+  // FieldMesh: whole bands (upstream: single frequencies only)
+  { 433050, 434790 },  // EU 433 MHz ISM band (SRD, allowed from 433.050)
   { 869400, 869650 },  // EU 869 MHz SRD sub-band g3 (500 mW, 10% duty cycle)
-  { 915000, 928000 }   // US/AU 915 MHz ISM-Band
+  { 915000, 928000 }   // US/AU 915 MHz ISM band
   #endif
 };
 
@@ -1078,7 +1078,7 @@ void MyMesh::handleCmdFrame(size_t len) {
     i += 12;
     StrHelper::strzcpy((char *)&out_frame[i], board.getManufacturerName(), 40);
     i += 40;
-    StrHelper::strzcpy((char *)&out_frame[i], fmAppVersion(FIRMWARE_VERSION), 20);   // FieldMesh #17: "v1.18.0-fm2.2.0"
+    StrHelper::strzcpy((char *)&out_frame[i], fmAppVersion(FIRMWARE_VERSION), 20);   // FieldMesh: "v1.18.0-fm2.2.0"
     i += 20;
     out_frame[i++] = _prefs.isRepeatEn() ? 1 : 0;   // v9+
     out_frame[i++] = _prefs.path_hash_mode;  // v10+
@@ -1460,7 +1460,7 @@ void MyMesh::handleCmdFrame(size_t len) {
       savePrefs();
 
       radio_driver.setParams(_prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr);
-      fmOnNetworkChange();   // FieldMesh v2.2: no SOS resend / queued relay into the other network
+      fmOnNetworkChange();   // FieldMesh: no SOS resend / queued relay into the other network
       MESH_DEBUG_PRINTLN("OK: CMD_SET_RADIO_PARAMS: f=%d, bw=%d, sf=%d, cr=%d", freq, bw, (uint32_t)sf,
                          (uint32_t)cr);
 
@@ -1874,7 +1874,7 @@ void MyMesh::handleCmdFrame(size_t len) {
       strcpy(dp, sensors.getSettingName(i));
       dp = strchr(dp, 0);
       *dp++ = ':';
-      strcpy(dp, _gps_cycle.reportSetting(sensors.getSettingName(i), sensors.getSettingValue(i)));  // FieldMesh v2.1
+      strcpy(dp, _gps_cycle.reportSetting(sensors.getSettingName(i), sensors.getSettingValue(i)));
       dp = strchr(dp, 0);
     }
     _serial->writeFrame(out_frame, dp - (char *)out_frame);
@@ -2201,7 +2201,7 @@ bool MyMesh::handleCommand(const char* command, uint32_t sender_timestamp, char*
   }
 
   if (strcmp(command, "ver") == 0) {
-    sprintf(reply, "%s (Build: %s)", fmAppVersion(FIRMWARE_VERSION), FIRMWARE_BUILD_DATE);   // FieldMesh #17
+    sprintf(reply, "%s (Build: %s)", fmAppVersion(FIRMWARE_VERSION), FIRMWARE_BUILD_DATE);   // FieldMesh
     return true;
   }
 

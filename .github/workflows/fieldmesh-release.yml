@@ -55,7 +55,7 @@ jobs:
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-environment
 
-      # FieldMesh version and today's date go into the firmware (#17); every later pio step
+      # FieldMesh version and today's date go into the firmware; every later pio step
       # sees the same flags, so mergebin does not rebuild without them
       - name: Version flags
         env:

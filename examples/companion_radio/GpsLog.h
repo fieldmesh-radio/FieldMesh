@@ -1,6 +1,6 @@
 #pragma once
 
-// FieldMesh v2.1 diagnostics: log of the GPS duty cycle on the secondary file system.
+// FieldMesh diagnostics: log of the GPS duty cycle on the secondary file system.
 // Only compiled with -D FM_GPS_LOG=1 (local diagnostic builds, never in releases).
 //
 // One record per cycle event, only while GPS is enabled:
@@ -25,8 +25,8 @@
 // kept. /fm_gps.idx holds the current segment number.
 // Why not one file used as a ring: LittleFS v1 rewrites a file from the changed position to
 // its end, so overwriting the start of a 12 KB file needs 12 KB of free space - with full
-// contacts only ~8 KB were free and every write after the first wrap failed silently (field
-// test 23./24.10.: log ended at 03:42; the error only shows on close, which reports nothing).
+// contacts only ~8 KB were free and every write after the first wrap failed silently (the
+// error only shows on close, which reports nothing).
 // The secondary FS also holds contacts, channels and advert blobs (T1000-E: 100 KB in
 // internal flash, ~81 KB used with 350 contacts). Each write is checked by the file size
 // after closing; failed writes are counted. "gpslog" ends with the FS usage and its files.
@@ -64,10 +64,8 @@ public:
     uint16_t gsv;             // GSV sentences during the search
     uint8_t  best_snr;        // best SNR (dB-Hz) during the search
     uint8_t  types;           // sentence types since the last wake
-    uint8_t  cfg;             // receiver configuration (GpsCycle::configFlags()); was the
-                              // $PAIR062 acknowledgement before 22.10.
-    uint8_t  usable;          // most satellites >= 20 dB-Hz in one epoch (FAIL/EXT); was the
-                              // $PAIR513 acknowledgement before 22.10. (always 0 in the tests)
+    uint8_t  cfg;             // receiver configuration (GpsCycle::configFlags())
+    uint8_t  usable;          // most satellites >= 20 dB-Hz in one epoch (FAIL/EXT)
     uint8_t  good;            // most satellites >= 30 dB-Hz in one epoch (FAIL/EXT)
     uint8_t  reason;          // FAIL: why the search ended (GpsCycle::EndReason); bit 7 = fast
   };   // 32 bytes

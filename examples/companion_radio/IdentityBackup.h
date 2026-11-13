@@ -1,15 +1,15 @@
 #pragma once
 
-// FieldMesh v2.1: backup of identity and prefs on the secondary file system.
+// FieldMesh: backup of identity and prefs on the secondary file system.
 //
-// Background: on some v1.x -> v2.0 updates (formerly V5.x -> V6.0) the internal file system (InternalFS) was wiped
+// Background: firmware updates have been seen to wipe the internal file system (InternalFS)
 // completely - new identity, default settings - while contacts and channels on the secondary
-// file system survived (see RECHERCHE_V6_Upgrade_Identity_Reset.md). The cause is not known.
+// file system survived. The cause is not known.
 // This keeps a copy of /_main.id and /prefs.json on the secondary file system
 // (M1/L1: QSPI flash, T1000-E: ExtraFS in internal flash) and restores it at boot when the
 // primary copy is missing. A factory reset formats both file systems, so it still resets.
 //
-// v2.2.1: the identity file must have exactly FM_ID_FILE_SIZE bytes. Upstream
+// The identity file must have exactly FM_ID_FILE_SIZE bytes. Upstream
 // IdentityStore::save() reports success even when the write failed, so a short (truncated or
 // empty) identity file must never replace a good backup, and at boot a primary file with the
 // wrong size is restored from the backup like a missing one (otherwise MyMesh would create a
@@ -108,8 +108,8 @@ class IdentityBackup {
 
 public:
   // At boot, before identity and prefs are loaded: restore missing files (identity also when
-  // its size is wrong), then refresh backups (also creates the first backup on devices updated
-  // from v2.0).
+  // its size is wrong), then refresh backups (also creates the first backup after an update
+  // from a firmware without this backup).
   static void begin(FILESYSTEM* primary, FILESYSTEM* secondary) {
     if (primary == nullptr || secondary == nullptr) return;
 

@@ -24,7 +24,7 @@ struct AdvertPath;  // forward declaration for countOnlineNodesExcluding
 #include "../AbstractUITask.h"
 #include "../NodePrefs.h"
 
-// V6: upstream repeater discovery screen (MeshCore v1.18)
+// upstream repeater discovery screen
 #ifdef UI_NO_DISCOVER_SCREEN
   #error "UI_NO_DISCOVER_SCREEN is obsolete - use -D UI_DISCOVER_SCREEN=0 instead"
 #endif
@@ -63,12 +63,12 @@ class UITask : public AbstractUITask {
   NodePrefs* _node_prefs;
   char _alert[80];
   unsigned long _alert_expiry;
-  char _alert_next[32];          // v2.2: shown right after the current alert expires
+  char _alert_next[32];          // shown right after the current alert expires
   int _alert_next_ms;
   int _msgcount;
-  int _num_unread;               // V5: internal unread counter (independent of _msgcount)
-  char _latest_fav_name[33];     // V5: name of the most recent favourite with a message
-  uint32_t _latest_fav_time;     // V5: Zeitstempel seiner letzten Nachricht
+  int _num_unread;               // internal unread counter (independent of _msgcount)
+  char _latest_fav_name[33];     // name of the most recent favourite with a message
+  uint32_t _latest_fav_time;     // timestamp of its last message
 
   // Online node cache — nodes heard (advert or message) within the last 30 minutes
   struct OnlineNode {
@@ -78,13 +78,13 @@ class UITask : public AbstractUITask {
   static const int ONLINE_CACHE_SIZE = 16;
   OnlineNode _online_nodes[ONLINE_CACHE_SIZE];
   unsigned long ui_started_at, next_batt_chck;
-  uint8_t _low_batt_count;   // v2.3: consecutive readings below AUTO_SHUTDOWN_MILLIVOLTS
+  uint8_t _low_batt_count;   // consecutive readings below AUTO_SHUTDOWN_MILLIVOLTS
   int next_backlight_btn_check = 0;
 #ifdef DISP_BACKLIGHT
-  bool _backlight_on = false;           // aktueller Backlight-Zustand
+  bool _backlight_on = false;           // current backlight state
   bool _backlight_initialized = false;  // set to true only after boot
   #ifdef PIN_BUTTON2
-  bool _btn2_was_pressed = false;       // Entprellungs-Flag Toggle-Knopf
+  bool _btn2_was_pressed = false;       // debounce flag of the toggle button
   #endif
 #endif
 #ifdef PIN_STATUS_LED
@@ -97,18 +97,18 @@ class UITask : public AbstractUITask {
   unsigned long _analogue_pin_read_millis = millis();
 #endif
 
-  // Screen-Instanzen
+  // screen instances
   UIScreen* splash;
   UIScreen* home;
-  UIScreen* msg_history;    // V5: ersetzt msg_preview
-  UIScreen* msg_filter;     // V5: Filter/Navigation-Screen
-  UIScreen* fav_preview;    // V5.05: favourite popup (most recent message from a favourite)
+  UIScreen* msg_history;    // message history (one message per view)
+  UIScreen* msg_filter;     // filter/navigation screen
+  UIScreen* fav_preview;    // favourite popup (most recent message from a favourite)
   UIScreen* outdoor_menu;
-  UIScreen* sos_alert;      // V3: SOS Alarm-Screen (Empfang)
-  UIScreen* sos_send;       // V3: SOS Sende-Screen
+  UIScreen* sos_alert;      // SOS alarm screen (received)
+  UIScreen* sos_send;       // SOS send screen
 #if UI_HAS_JOYSTICK
-  UIScreen* channel_select; // V5: Channel-Auswahl (L1 only)
-  UIScreen* msg_compose;    // V5: Tastatur-Screen (L1 only)
+  UIScreen* channel_select; // channel selection (L1 only)
+  UIScreen* msg_compose;    // keyboard screen (L1 only)
 #endif
   UIScreen* curr;
 
@@ -129,32 +129,32 @@ public:
     _msgcount = 0;
     ui_started_at = 0;
     curr = NULL;
-    _num_unread = 0;           // V5
-    _latest_fav_name[0] = 0;  // V5
-    _latest_fav_time = 0;     // V5
+    _num_unread = 0;
+    _latest_fav_name[0] = 0;
+    _latest_fav_time = 0;
     memset(_online_nodes, 0, sizeof(_online_nodes));
   }
 
   void begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* node_prefs);
 
-  // V5: setCurrScreen public — screen classes can navigate directly (E3)
+  // setCurrScreen public — screen classes can navigate directly
   void setCurrScreen(UIScreen* c);
 
   // Navigation helpers
   void gotoHomeScreen()    { setCurrScreen(home); }
-  void gotoMsgFilter()     { setCurrScreen(msg_filter); }  // V5: used by MsgComposeScreen::_doSend()
+  void gotoMsgFilter()     { setCurrScreen(msg_filter); }  // used by MsgComposeScreen::_doSend()
 #if UI_HAS_JOYSTICK
-  void gotoChannelSelect();  // V5: loads channels and switches to channel_select (impl. in .cpp)
+  void gotoChannelSelect();  // loads channels and switches to channel_select (impl. in .cpp)
 #endif
 
   void showAlert(const char* text, int duration_millis);
-  void showAlertNext(const char* text, int duration_millis);   // v2.2: queued after the current alert
+  void showAlertNext(const char* text, int duration_millis);   // queued after the current alert
 
   // Getter
   int         getMsgCount()  const { return _msgcount; }
-  int         getNumUnread() const { return _num_unread; }                    // V5
-  const char* getLatestFavoriteName() const { return _latest_fav_name; }     // V5
-  uint32_t    getLatestFavoriteTime() const { return _latest_fav_time; }     // V5
+  int         getNumUnread() const { return _num_unread; }
+  const char* getLatestFavoriteName() const { return _latest_fav_name; }
+  uint32_t    getLatestFavoriteTime() const { return _latest_fav_time; }
 
   // Online node cache
   void updateOnlineNode(const char* name, uint32_t timestamp);
@@ -168,10 +168,10 @@ public:
   bool hasDisplay() const { return _display != NULL; }
   bool isButtonPressed() const;
 
-  // V5: Synchronisation des _num_unread-Zaehlers durch MsgHistoryScreen
+  // MsgHistoryScreen keeps _num_unread in sync
   void decrementUnread()        { if (_num_unread > 0) _num_unread--; }
   void resetUnread()            { _num_unread = 0; }
-  void setUnreadCount(int n)    { _num_unread = (n >= 0) ? n : 0; }  // V5.03: direkt setzen
+  void setUnreadCount(int n)    { _num_unread = (n >= 0) ? n : 0; }  // set directly
   void clearFavoriteCache()     { _latest_fav_name[0] = 0; _latest_fav_time = 0; }
 
   bool isBuzzerQuiet() {
@@ -186,18 +186,18 @@ public:
   bool getGPSState();
   void toggleGPS();
 
-  void triggerSOS(const char* from, const char* text);  // V3
-  bool isBuzzerPlaying();                               // V3
-  void playSOSAlarm();                                  // V3
-  void stopBuzzer();                                    // V3
+  void triggerSOS(const char* from, const char* text);
+  bool isBuzzerPlaying();
+  void playSOSAlarm();
+  void stopBuzzer();
 
-  // V6: MyMesh::Listener (replaces newMsg()/msgRead() calls from MyMesh)
+  // MyMesh::Listener
   void onMessageRecv(mesh::Packet *pkt, const ContactInfo &from, uint8_t txt_type, uint32_t sender_timestamp, const char* text) override;
   void onChannelMessageRecv(mesh::Packet *pkt, ChannelDetails& channel_details, const char* text) override;
   void onQueueSizeChanged(int msgcount) override;
   void onDiscoveredContact(ContactInfo &contact, bool is_new, uint8_t path_len, const uint8_t* path) override;
   void onControlDataRecv(const mesh::Packet* pkt) override;
-  void onClockAdjusted(int32_t delta_secs) override;   // V6 (#23)
+  void onClockAdjusted(int32_t delta_secs) override;
 
   // FieldMesh message handling (called from the listener methods above)
   void msgRead(int msgcount);
