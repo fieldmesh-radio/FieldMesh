@@ -498,5 +498,57 @@
    "referrer": "search.brave.com",
    "uniques": 1
   }
+ ],
+ "2026-11-14": [
+  {
+   "count": 49,
+   "referrer": "github.com",
+   "uniques": 15
+  },
+  {
+   "count": 46,
+   "referrer": "aocr.org",
+   "uniques": 46
+  },
+  {
+   "count": 17,
+   "referrer": "Google",
+   "uniques": 13
+  },
+  {
+   "count": 12,
+   "referrer": "reddit.com",
+   "uniques": 11
+  },
+  {
+   "count": 2,
+   "referrer": "tobiasguertler.de",
+   "uniques": 2
+  },
+  {
+   "count": 2,
+   "referrer": "togerix-hub.github.io",
+   "uniques": 2
+  },
+  {
+   "count": 1,
+   "referrer": "com.reddit.frontpage",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "fieldmesh-radio.github.io",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "hamradio.my",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "search.brave.com",
+   "uniques": 1
+  }
  ]
 }
