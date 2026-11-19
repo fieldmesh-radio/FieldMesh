@@ -928,5 +928,67 @@
    "title": "/discussions",
    "uniques": 2
   }
+ ],
+ "2026-11-19": [
+  {
+   "count": 86,
+   "path": "/fieldmesh-radio/FieldMesh",
+   "title": "Overview",
+   "uniques": 50
+  },
+  {
+   "count": 14,
+   "path": "/fieldmesh-radio/FieldMesh/discussions/56",
+   "title": "/discussions/56",
+   "uniques": 12
+  },
+  {
+   "count": 7,
+   "path": "/fieldmesh-radio/FieldMesh/releases/tag/v2.2.0",
+   "title": "/releases/tag/v2.2.0",
+   "uniques": 7
+  },
+  {
+   "count": 7,
+   "path": "/fieldmesh-radio/FieldMesh/discussions/39",
+   "title": "/discussions/39",
+   "uniques": 6
+  },
+  {
+   "count": 7,
+   "path": "/fieldmesh-radio/FieldMesh/releases/tag/v2.1.0",
+   "title": "/releases/tag/v2.1.0",
+   "uniques": 4
+  },
+  {
+   "count": 7,
+   "path": "/fieldmesh-radio/FieldMesh/discussions",
+   "title": "/discussions",
+   "uniques": 3
+  },
+  {
+   "count": 7,
+   "path": "/fieldmesh-radio/FieldMesh/releases",
+   "title": "/releases",
+   "uniques": 3
+  },
+  {
+   "count": 4,
+   "path": "/fieldmesh-radio/FieldMesh/branches",
+   "title": "/branches",
+   "uniques": 1
+  },
+  {
+   "count": 3,
+   "path": "/fieldmesh-radio/FieldMesh/commit/384e4820528c296b3ccadbb21bd341e98e9d7d30",
+   "title": "/commit/384e4820528c296b3ccadbb21bd341e98e9d7d30",
+   "uniques": 3
+  },
+  {
+   "count": 3,
+   "path": "/fieldmesh-radio/FieldMesh/blob/main/docs/FieldMesh/images/repeater_dashboard_radar.png",
+   "title": "/blob/main/docs/FieldMesh/images/repeater_dashboard_radar.png",
+   "uniques": 2
+  }
  ]
 }
