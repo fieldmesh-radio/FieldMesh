@@ -990,5 +990,67 @@
    "title": "/blob/main/docs/FieldMesh/images/repeater_dashboard_radar.png",
    "uniques": 2
   }
+ ],
+ "2026-11-20": [
+  {
+   "count": 68,
+   "path": "/fieldmesh-radio/FieldMesh",
+   "title": "Overview",
+   "uniques": 39
+  },
+  {
+   "count": 12,
+   "path": "/fieldmesh-radio/FieldMesh/discussions/56",
+   "title": "/discussions/56",
+   "uniques": 10
+  },
+  {
+   "count": 7,
+   "path": "/fieldmesh-radio/FieldMesh/releases/tag/v2.1.0",
+   "title": "/releases/tag/v2.1.0",
+   "uniques": 4
+  },
+  {
+   "count": 7,
+   "path": "/fieldmesh-radio/FieldMesh/releases",
+   "title": "/releases",
+   "uniques": 3
+  },
+  {
+   "count": 6,
+   "path": "/fieldmesh-radio/FieldMesh/releases/tag/v2.2.0",
+   "title": "/releases/tag/v2.2.0",
+   "uniques": 6
+  },
+  {
+   "count": 6,
+   "path": "/fieldmesh-radio/FieldMesh/discussions/39",
+   "title": "/discussions/39",
+   "uniques": 5
+  },
+  {
+   "count": 2,
+   "path": "/fieldmesh-radio/FieldMesh/blob/main/docs/FieldMesh/images/repeater_dashboard_nodes.png",
+   "title": "/blob/main/docs/FieldMesh/images/repeater_dashboard_nodes.png",
+   "uniques": 2
+  },
+  {
+   "count": 2,
+   "path": "/fieldmesh-radio/FieldMesh/blob/main/docs/FieldMesh/images/repeater_dashboard_radar.png",
+   "title": "/blob/main/docs/FieldMesh/images/repeater_dashboard_radar.png",
+   "uniques": 2
+  },
+  {
+   "count": 2,
+   "path": "/fieldmesh-radio/FieldMesh/discussions",
+   "title": "/discussions",
+   "uniques": 2
+  },
+  {
+   "count": 2,
+   "path": "/fieldmesh-radio/FieldMesh/branches",
+   "title": "/branches",
+   "uniques": 1
+  }
  ]
 }
