@@ -1156,6 +1156,7 @@ void MyMesh::handleCmdFrame(size_t len) {
       int tlen = len - i;
       uint32_t est_timeout;
       text[tlen] = 0; // ensure null
+      if (txt_type == TXT_TYPE_PLAIN && fmBlockDirectMsg(*recipient, text)) return;   // FieldMesh: "!block", answered locally
       int result;
       uint32_t expected_ack;
       if (txt_type == TXT_TYPE_CLI_DATA || txt_type == TXT_TYPE_CLI_COMMAND) {
@@ -1198,6 +1199,8 @@ void MyMesh::handleCmdFrame(size_t len) {
 
     if (txt_type != TXT_TYPE_PLAIN) {
       writeErrFrame(ERR_CODE_UNSUPPORTED_CMD);
+    } else if (fmBlockChannelCmd(channel_idx, text, len - i)) {
+      // FieldMesh: block list command, answered locally
     } else {
       ChannelDetails channel;
       bool success = getChannel(channel_idx, channel);
@@ -1593,7 +1596,9 @@ void MyMesh::handleCmdFrame(size_t len) {
     ContactInfo *recipient = lookupContactByPubKey(pub_key, PUB_KEY_SIZE);
     char *password = (char *)&cmd_frame[1 + PUB_KEY_SIZE];
     cmd_frame[len] = 0; // ensure null terminator in password
-    if (recipient) {
+    if (recipient && fmBlockLogin(*recipient, password)) {
+      // FieldMesh: password "!block", answered locally
+    } else if (recipient) {
       uint32_t est_timeout;
       int result = sendLogin(*recipient, password, est_timeout);
       if (result == MSG_SEND_FAILED) {

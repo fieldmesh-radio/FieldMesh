@@ -323,6 +323,14 @@ private:
   uint32_t fmFloodTimeoutExtra() const;                // calcFloodTimeoutMillisFor(): extra time in Off-Grid
   void fmFilterRelay(mesh::Packet* packet);            // filterRecvFloodPacket() in Off-Grid: drop duplicate advert relay
   void fmOnNetworkChange();                            // Off-Grid toggled / new radio params: drop SOS resend + queued relays
+
+  // Block list (BlockList.h): adverts of blocked nodes are dropped; managed from the app
+  void onAdvertRecv(mesh::Packet* packet, const mesh::Identity& id, uint32_t timestamp,
+                    const uint8_t* app_data, size_t app_data_len) override;
+  bool fmBlockAdd(const ContactInfo& contact);
+  bool fmBlockDirectMsg(const ContactInfo& recipient, const char* text);    // CMD_SEND_TXT_MSG: "!block"
+  bool fmBlockLogin(const ContactInfo& recipient, const char* password);    // CMD_SEND_LOGIN: password "!block"
+  bool fmBlockChannelCmd(uint8_t channel_idx, const char* text, int len);   // CMD_SEND_CHANNEL_TXT_MSG: list / unblock
   uint32_t _fm_relay_skipped = 0;                      // queued advert relays dropped because another node relayed first
 #ifdef FM_FLOOD_LOG
   FloodLog _fm_flog;                                   // FloodLog.h, diagnostic builds only
