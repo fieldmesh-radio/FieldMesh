@@ -29,7 +29,7 @@ void UITask::fmDrawHeader(const char* title) {
   _display->setColor(UIColor::primary_txt);
 }
 
-// Boot screen below the meshcore logo (#17): "FieldMesh v2.2.0", the MeshCore version with
+// Boot screen below the meshcore logo: "FieldMesh v2.2.0", the MeshCore version with
 // build date ("v1.18.0 (04 Nov 2026)", from begin()) and the node type. 21 characters fit 128 px;
 // a longer test/dev name is shortened to "FM <version>".
 void UITask::fmRenderBoot() {

@@ -126,7 +126,7 @@ void BaseChatMesh::onAdvertRecv(mesh::Packet* packet, const mesh::Identity& id, 
     return;
   }
   // FieldMesh: remember whether THIS advert carried GPS, so onDiscoveredContact() can tell
-  // (contact.gps_lat/lon keeps the old value for known contacts). Replaces the former bit-4 hack.
+  // (contact.gps_lat/lon keeps the old value for known contacts).
   _last_advert_has_latlon = parser.hasLatLon();
 
   ContactInfo* from = NULL;

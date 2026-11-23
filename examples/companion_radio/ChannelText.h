@@ -8,7 +8,7 @@
 
 // Channel message text is "<sender name>: <message>".
 // Sender = everything before the first ": " - never split on " | ", it can be part of a
-// node name (e.g. "Juno48 | Region: Hello" -> "Juno48 | Region").
+// node name (e.g. "Alice | Region: Hello" -> "Alice | Region").
 // Returns false (out_name untouched) when there is no ": ", the name is empty or it does
 // not fit into max_len (incl. terminating zero).
 static inline bool fmExtractSenderName(const char* text, char* out_name, int max_len) {

@@ -1,4 +1,4 @@
-// FieldMesh repeater: weather for '!wetter' (P5f). Only compiled in with -D FIELDMESH_REPEATER=1.
+// FieldMesh repeater: weather for '!wetter'. Only compiled in with -D FIELDMESH_REPEATER=1.
 //
 // The box has no internet. A phone in the dashboard WiFi with mobile data fetches the forecast
 // for the box position from Open-Meteo (every 3 h, in the background) and posts it to

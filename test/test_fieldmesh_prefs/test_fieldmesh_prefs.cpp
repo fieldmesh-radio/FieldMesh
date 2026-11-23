@@ -74,7 +74,7 @@ public:
 // prefs as they look while Off-Grid is active: radio on the Off-Grid channel,
 // the user's normal parameters (EU/UK Narrow preset) parked in "fm"
 void fillOffGridPrefs(NodePrefs& p) {
-  strcpy(p.node_name, "Tobi | M1");
+  strcpy(p.node_name, "Alex | M1");
   p.freq = 869.4625f;
   p.bw = 125.0f;
   p.sf = 11;
@@ -119,7 +119,7 @@ TEST(FieldMeshPrefs, NormalRadioParamsSurviveSaveAndLoad) {
   EXPECT_FLOAT_EQ(125.0f, loaded.bw);
   EXPECT_EQ(11, loaded.sf);
   EXPECT_EQ(5, loaded.cr);
-  EXPECT_STREQ("Tobi | M1", loaded.node_name);
+  EXPECT_STREQ("Alex | M1", loaded.node_name);
 }
 
 TEST(FieldMeshPrefs, CommonPresetFrequenciesKeepTheirPrecision) {
@@ -166,7 +166,7 @@ TEST(FieldMeshPrefs, StockMeshCoreFileWithoutFmLoadsWithDefaults) {
   ReplayStream in(json);
   ASSERT_TRUE(loaded.loadSerial(in));
 
-  EXPECT_STREQ("Tobi | M1", loaded.node_name);
+  EXPECT_STREQ("Alex | M1", loaded.node_name);
   EXPECT_FLOAT_EQ(869.4625f, loaded.freq);
   EXPECT_EQ(0.0f, loaded.normal_freq);   // 0 = "nothing saved", Off-Grid saves fresh values
   EXPECT_EQ(0.0f, loaded.normal_bw);
@@ -210,6 +210,53 @@ TEST(FieldMeshPrefs, RepeatFlagRoundTrips) {
 TEST(FieldMeshPrefs, RepeatIsOffByDefault) {
   NodePrefs p;
   EXPECT_FALSE(p.isRepeatEn());
+}
+
+TEST(FieldMeshPrefs, BlockListSurvivesSaveAndLoad) {
+  NodePrefs saved;
+  fillOffGridPrefs(saved);
+  uint8_t a[32], b[32];
+  for (int i = 0; i < 32; i++) { a[i] = (uint8_t)(0xA0 + i); b[i] = (uint8_t)(0x10 + i); }
+  saved.blocklist.add(a, "Far \"Away\" | X");   // quotes are escaped in the file
+  saved.blocklist.add(b, "");
+  std::string json = save(saved);
+
+  NodePrefs loaded;
+  ReplayStream in(json);
+  ASSERT_TRUE(loaded.loadSerial(in)) << json;
+  EXPECT_EQ(2, loaded.blocklist.count());
+  EXPECT_TRUE(loaded.blocklist.contains(a));
+  EXPECT_TRUE(loaded.blocklist.contains(b));
+  EXPECT_STREQ("Far \"Away\" | X", loaded.blocklist.names[0]);
+  EXPECT_STREQ("", loaded.blocklist.names[1]);
+  // the rest of "fm" is unaffected
+  EXPECT_FLOAT_EQ(869.618f, loaded.normal_freq);
+  EXPECT_EQ(8, loaded.normal_cr);
+}
+
+TEST(FieldMeshPrefs, EmptyBlockListWritesNoKeys) {
+  NodePrefs p;
+  fillOffGridPrefs(p);
+  std::string json = save(p);
+  EXPECT_EQ(std::string::npos, json.find("b0:")) << json;
+
+  NodePrefs loaded;
+  ReplayStream in(json);
+  ASSERT_TRUE(loaded.loadSerial(in));
+  EXPECT_EQ(0, loaded.blocklist.count());
+}
+
+TEST(FieldMeshPrefs, BlockListKeysLiveInTheFmObject) {
+  NodePrefs p;
+  uint8_t a[32] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+  p.blocklist.add(a, "N");
+  std::string json = save(p);
+  size_t fm = json.find("fm:{");
+  ASSERT_NE(std::string::npos, fm) << json;
+  size_t pos = json.find("b0:");
+  ASSERT_NE(std::string::npos, pos) << json;
+  EXPECT_GT(pos, fm) << json;
+  EXPECT_LT(pos, json.find('}', fm)) << json;
 }
 
 int main(int argc, char** argv) {

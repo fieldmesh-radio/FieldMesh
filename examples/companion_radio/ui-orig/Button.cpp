@@ -52,9 +52,9 @@ void Button::update() {
             triggerEvent(DOUBLE_PRESS);
         } else if (_clickCount == 3) {
             triggerEvent(TRIPLE_PRESS);
-        } else if (_clickCount == 4) {         // V2.02: exactly 4, not >= 4
+        } else if (_clickCount == 4) {         // exactly 4, not >= 4
             triggerEvent(QUADRUPLE_PRESS);
-        } else if (_clickCount >= 5) {         // V2.02: 5x click
+        } else if (_clickCount >= 5) {         // 5x click
             triggerEvent(QUINTUPLE_PRESS);
         }
 
@@ -62,7 +62,7 @@ void Button::update() {
         _state = IDLE;
     }
     
-    // v2.2: click + hold - a press that started within the multi-click window after exactly
+    // click + hold - a press that started within the multi-click window after exactly
     // one click becomes CLICK_HOLDING instead of a long press (power off)
     if (_state == PRESSED && _holdAfterClick && (now - _pressTime) > BUTTON_CLICK_HOLD_MS) {
         _state = CLICK_HOLDING;
@@ -91,14 +91,14 @@ void Button::handleStateChange() {
     
     if (_currentState) {
         // Button pressed
-        // v2.2: second press within the multi-click window after exactly one click
+        // second press within the multi-click window after exactly one click
         _holdAfterClick = (_state == WAITING_FOR_MULTI_CLICK && _clickCount == 1);
         _pressTime = now;
         _state = PRESSED;
         triggerEvent(ANY_PRESS);
     } else {
         // Button released
-        if (_state == CLICK_HOLDING) {          // v2.2: end of click + hold
+        if (_state == CLICK_HOLDING) {          // end of click + hold
             _state = IDLE;
             _clickCount = 0;
             _holdAfterClick = false;
@@ -139,16 +139,16 @@ void Button::triggerEvent(EventType event) {
         case QUADRUPLE_PRESS:
             if (_onQuadruplePress) _onQuadruplePress();
             break;
-        case QUINTUPLE_PRESS:                              // V2.02
+        case QUINTUPLE_PRESS:
             if (_onQuintuplePress) _onQuintuplePress();
             break;
         case LONG_PRESS:
             if (_onLongPress) _onLongPress();
             break;
-        case CLICK_HOLD_START:                             // v2.2
+        case CLICK_HOLD_START:
             if (_onClickHoldStart) _onClickHoldStart();
             break;
-        case CLICK_HOLD_END:                               // v2.2
+        case CLICK_HOLD_END:
             if (_onClickHoldEnd) _onClickHoldEnd();
             break;
         default:

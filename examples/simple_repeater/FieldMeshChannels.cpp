@@ -1,4 +1,4 @@
-// FieldMesh repeater: channel list of the box (P4: SOS into the room board).
+// FieldMesh repeater: channel list of the box (SOS into the room board).
 // Only compiled in with -D FIELDMESH_REPEATER=1.
 //
 // Upstream a repeater decrypts no channels (mesh::Mesh::searchChannelsByHash() returns 0).
@@ -73,7 +73,7 @@ void MyMesh::onGroupDataRecv(mesh::Packet* packet, uint8_t type, const mesh::Gro
       break;
     }
   }
-  if (ch == NULL || !fmIsSosChannelName(ch->name)) return;   // only SOS channels for now (P4)
+  if (ch == NULL || !fmIsSosChannelName(ch->name)) return;   // only SOS channels for now
 
   data[len] = 0;   // C string (text may be padded with zeroes)
   const char* text = (const char *)&data[5];   // "<sender>: <message>"
@@ -91,7 +91,7 @@ void MyMesh::onGroupDataRecv(mesh::Packet* packet, uint8_t type, const mesh::Gro
   } else {
     strcpy(sender, "?");
   }
-  const char* info = sos + 4;   // e.g. " 48.7636,9.1621 bat78%" or " no GPS bat78%"
+  const char* info = sos + 4;   // e.g. " 48.7758,9.1829 bat78%" or " no GPS bat78%"
   while (*info == ' ') info++;
 
   // remember for 'get sos' (and later the dashboard)

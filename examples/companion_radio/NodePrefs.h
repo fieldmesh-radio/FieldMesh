@@ -3,6 +3,7 @@
 #include <helpers/ConfigSerializer.h>
 #include <helpers/CommonRadioPrefs.h>
 #include <helpers/DynamicConfigSerializer.h>
+#include "BlockList.h"   // FieldMesh: local block list (stored in "fm")
 
 #define TELEM_MODE_DENY            0
 #define TELEM_MODE_ALLOW_FLAGS     1     // use contact.flags
@@ -48,11 +49,12 @@ public:
   char default_scope_name[31];
   uint8_t default_scope_key[16];
   int8_t tz_offset = 0;
-  // FieldMesh Off-Grid: gespeicherte Normal-Parameter (werden vor Off-Grid-Aktivierung gesichert)
+  // FieldMesh Off-Grid: normal parameters (saved before Off-Grid is switched on)
   float   normal_freq = 0;
   float   normal_bw = 0;
   uint8_t normal_sf = 0;
   uint8_t normal_cr = 0;
+  FmBlockList blocklist;   // FieldMesh: nodes whose adverts this device ignores
 #ifdef ENABLE_WIFI_INTERFACE
   #ifndef WIFI_SSID
     #define WIFI_SSID ""
@@ -188,6 +190,16 @@ private:
       def("n_bw", _parent->normal_bw);
       def("n_sf", _parent->normal_sf);
       def("n_cr", _parent->normal_cr);
+      // block list: one key + name pair per used entry ("b0"/"b0n" ... "b7"/"b7n")
+      static_assert(FM_BLOCK_MAX == 8, "key tables below list 8 entries");
+      static const char* const key_ids[FM_BLOCK_MAX] = { "b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7" };
+      static const char* const name_ids[FM_BLOCK_MAX] = { "b0n", "b1n", "b2n", "b3n", "b4n", "b5n", "b6n", "b7n" };
+      FmBlockList& bl = _parent->blocklist;
+      for (int i = 0; i < FM_BLOCK_MAX; i++) {
+        if (_context->op() == OP::WRITE && !bl.used(i)) continue;   // only used entries are written
+        def(key_ids[i], (void*) bl.keys[i], FM_BLOCK_KEY_LEN);
+        def(name_ids[i], bl.names[i], FM_BLOCK_NAME_SIZE);
+      }
     }
   public:
     FieldMeshPrefs(NodePrefs* parent) : _parent(parent) { }

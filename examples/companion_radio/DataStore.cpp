@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "DataStore.h"
-#include "IdentityBackup.h"   // FieldMesh v2.1
+#include "IdentityBackup.h"
 
 #if defined(EXTRAFS) || defined(QSPIFLASH)
   #define MAX_BLOBRECS 100
@@ -57,7 +57,7 @@ void DataStore::begin() {
   checkAdvBlobFile();
   #if defined(EXTRAFS) || defined(QSPIFLASH)
   migrateToSecondaryFS();
-  IdentityBackup::begin(_fs, _fsExtra);   // FieldMesh v2.1: restore/refresh identity + prefs backup
+  IdentityBackup::begin(_fs, _fsExtra);   // FieldMesh: restore/refresh identity + prefs backup
   #endif
 #else
   // init 'blob store' support
@@ -190,7 +190,7 @@ bool DataStore::loadMainIdentity(mesh::LocalIdentity &identity) {
 bool DataStore::saveMainIdentity(const mesh::LocalIdentity &identity) {
   bool ok = identity_store.save("_main", identity);
 #if (defined(NRF52_PLATFORM) || defined(STM32_PLATFORM)) && (defined(EXTRAFS) || defined(QSPIFLASH))
-  if (ok) IdentityBackup::identitySaved(_fs, _fsExtra);   // FieldMesh v2.1
+  if (ok) IdentityBackup::identitySaved(_fs, _fsExtra);
 #endif
   return ok;
 }
@@ -244,8 +244,8 @@ void DataStore::loadPrefsInt(const char *filename, NodePrefs& _prefs) {
     file.read((uint8_t *)&_prefs.rx_boosted_gain, sizeof(_prefs.rx_boosted_gain));         // 89
     file.read((uint8_t *)_prefs.default_scope_name, sizeof(_prefs.default_scope_name));    // 90
     file.read((uint8_t *)_prefs.default_scope_key, sizeof(_prefs.default_scope_key));     // 121
-    // FieldMesh Off-Grid Normal-Parameter (von FieldMesh <= v5.3 am Ende der Binaerdatei gespeichert;
-    // fehlen in Upstream-Saves -> read() liefert nichts, Werte bleiben 0)
+    // FieldMesh Off-Grid normal parameters (older FieldMesh versions stored them at the end of the
+    // binary file; missing in upstream saves -> read() returns nothing, values stay 0)
     file.read((uint8_t *)&_prefs.normal_freq, sizeof(_prefs.normal_freq));                 // 137
     file.read((uint8_t *)&_prefs.normal_bw,   sizeof(_prefs.normal_bw));                   // 141
     file.read((uint8_t *)&_prefs.normal_sf,   sizeof(_prefs.normal_sf));                   // 145
@@ -264,7 +264,7 @@ bool DataStore::savePrefs(NodePrefs& _prefs) {
     bool success = _prefs.saveSerial(file);
     file.close();
 #if (defined(NRF52_PLATFORM) || defined(STM32_PLATFORM)) && (defined(EXTRAFS) || defined(QSPIFLASH))
-    if (success) IdentityBackup::prefsSaved(_fs, _fsExtra);   // FieldMesh v2.1
+    if (success) IdentityBackup::prefsSaved(_fs, _fsExtra);
 #endif
     return success;
   }

@@ -1,5 +1,5 @@
 #pragma once
-// FieldMesh Off-Grid managed flooding (v2.2), only used while Off-Grid / repeat is on.
+// FieldMesh Off-Grid managed flooding, only used while Off-Grid / repeat is on.
 //
 // Timing and late window follow Meshtastic (firmware commit 332b5b0, src/mesh/RadioInterface.cpp:
 // computeSlotTimeMsec, getCWsize, getTxDelayMsecWeighted, getTxDelayMsecWeightedWorst):
@@ -11,7 +11,7 @@
 // give CW 9). This keeps the longest relay delay at 272 slots (22 s at SF11/125).
 //
 // Header-only: unit-tested natively (test/test_fieldmesh_flood) and shared with the FieldMesh
-// repeater. Background and simulation: claude/RECHERCHE_Flooding_OffGrid.md (project docs).
+// repeater.
 
 #include <stdint.h>
 #include <string.h>
@@ -61,7 +61,7 @@ inline uint32_t fmFloodTimeoutExtraMs(uint32_t slot_ms) {
 }
 
 // Only adverts are dropped when someone else already relayed them. Messages (incl. SOS), ACKs,
-// paths and everything else are always relayed, as today.
+// paths and everything else are always relayed.
 inline bool fmFloodCancelOnDuplicate(uint8_t payload_type) {
   return payload_type == PAYLOAD_TYPE_ADVERT;
 }

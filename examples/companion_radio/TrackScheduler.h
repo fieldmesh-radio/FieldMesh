@@ -1,10 +1,10 @@
 #pragma once
 
-// FieldMesh v2.1: send cadence for active tracking (replaces the fixed 5-min GPS advert,
-// issue #28). Smart-position idea from Meshtastic, values decided in PLAN_v6.1.md:
+// FieldMesh: send cadence for active tracking (instead of a fixed 5-min GPS advert, see
+// issue #28). Smart-position idea from Meshtastic:
 //   - first send at the first usable fix after tracking/GPS was switched on
 //   - moved >= min_dist since the last sent position and >= min_interval since the last send
-//     (>= 60 s while moving fast, see GpsCycle::isFast(); decided 23.10.)
+//     (>= 60 s while moving fast, see GpsCycle::isFast())
 //   - otherwise a heartbeat every heartbeat_ms (10 min); when no fresh fix (<= 2 min) is available at
 //     that moment it waits for the next fix (at most HEARTBEAT_WAIT_MS), then sends with or
 //     without position
@@ -12,8 +12,8 @@
 // solution has settled. A fix with fewer than MIN_SATS satellites is not used for the
 // movement check.
 //
-// Kept independent of adverts so the same cadence can drive team positions (#TEL) later;
-// TEAM's interval / min_dist map to heartbeat / min_dist.
+// Kept independent of adverts so the same cadence can drive team positions later (a team
+// interval / min_dist would map to heartbeat / min_dist).
 
 #include <Arduino.h>
 #include <math.h>
@@ -23,12 +23,12 @@ public:
   static constexpr uint16_t DEFAULT_MIN_DIST_M      = 100;
   static constexpr uint32_t DEFAULT_MIN_INTERVAL_MS = 120000;   // 2 min
   static constexpr uint32_t FAST_MIN_INTERVAL_MS    = 60000;    // while moving fast
-  static constexpr uint32_t DEFAULT_HEARTBEAT_MS    = 600000;   // 10 min (decided 23.10., was 15)
+  static constexpr uint32_t DEFAULT_HEARTBEAT_MS    = 600000;   // 10 min
   static constexpr uint8_t  MIN_SATS                = 4;
   // fixes arrive about every 115 s (GpsCycle wakes a bit early) - without slack a moving
   // node would only send every second fix
   static constexpr uint32_t INTERVAL_SLACK_MS       = 15000;
-  // field logs: just before the next fix the last one is 102..126 s old - a heartbeat due in
+  // just before the next fix the last one is 102..126 s old - a heartbeat due in
   // those few seconds would go out without position, so it waits for the next fix instead
   static constexpr uint32_t HEARTBEAT_WAIT_MS       = 150000;
 

@@ -1,20 +1,29 @@
 #pragma once
 
-// FieldMesh v2.1: backup of identity and prefs on the secondary file system.
+// FieldMesh: backup of identity and prefs on the secondary file system.
 //
-// Background: on some v1.x -> v2.0 updates (formerly V5.x -> V6.0) the internal file system (InternalFS) was wiped
+// Background: firmware updates have been seen to wipe the internal file system (InternalFS)
 // completely - new identity, default settings - while contacts and channels on the secondary
-// file system survived (see RECHERCHE_V6_Upgrade_Identity_Reset.md). The cause is not known.
+// file system survived. The cause is not known.
 // This keeps a copy of /_main.id and /prefs.json on the secondary file system
 // (M1/L1: QSPI flash, T1000-E: ExtraFS in internal flash) and restores it at boot when the
 // primary copy is missing. A factory reset formats both file systems, so it still resets.
 //
+// The identity file must have exactly FM_ID_FILE_SIZE bytes. Upstream
+// IdentityStore::save() reports success even when the write failed, so a short (truncated or
+// empty) identity file must never replace a good backup, and at boot a primary file with the
+// wrong size is restored from the backup like a missing one (otherwise MyMesh would create a
+// new identity, which then also overwrites the backup).
+//
 // Used by DataStore only, header-only on purpose (no extra build_src_filter entries needed).
+// FM_IDBACKUP_TEST: native unit test, which provides FILESYSTEM/File itself.
 
-#if defined(NRF52_PLATFORM) || defined(STM32_PLATFORM)
+#if defined(NRF52_PLATFORM) || defined(STM32_PLATFORM) || defined(FM_IDBACKUP_TEST)
 
 #include <Arduino.h>
+#ifndef FM_IDBACKUP_TEST
 #include <helpers/IdentityStore.h>   // FILESYSTEM
+#endif
 
 #define FM_ID_FILE          "/_main.id"
 #define FM_PREFS_FILE       "/prefs.json"
@@ -83,21 +92,30 @@ class IdentityBackup {
     return same;
   }
 
-  // refresh the backup if it is missing or differs from the primary file
-  static void syncOne(FILESYSTEM* primary, const char* src, FILESYSTEM* secondary, const char* dst) {
+  // refresh the backup if it is missing or differs from the primary file;
+  // required_size > 0: back up only a primary file of exactly that size
+  static void syncOne(FILESYSTEM* primary, const char* src, FILESYSTEM* secondary, const char* dst,
+                      size_t required_size = 0) {
     if (!primary->exists(src)) return;
+    if (required_size > 0 && fileSize(primary, src) != required_size) {
+      MESH_DEBUG_PRINTLN("IdentityBackup: %s has wrong size, backup kept", src);
+      return;
+    }
     if (secondary->exists(dst) && sameContent(primary, src, secondary, dst)) return;
     bool ok = copyFile(primary, src, secondary, dst);
     MESH_DEBUG_PRINTLN("IdentityBackup: backup %s -> %s %s", src, dst, ok ? "OK" : "FAILED");
   }
 
 public:
-  // At boot, before identity and prefs are loaded: restore missing files, then refresh backups
-  // (also creates the first backup on devices updated from v2.0).
+  // At boot, before identity and prefs are loaded: restore missing files (identity also when
+  // its size is wrong), then refresh backups (also creates the first backup after an update
+  // from a firmware without this backup).
   static void begin(FILESYSTEM* primary, FILESYSTEM* secondary) {
     if (primary == nullptr || secondary == nullptr) return;
 
-    if (!primary->exists(FM_ID_FILE) && fileSize(secondary, FM_ID_BACKUP) == FM_ID_FILE_SIZE) {
+    // fileSize() is 0 for a missing file, so this covers missing and truncated files
+    if (fileSize(primary, FM_ID_FILE) != FM_ID_FILE_SIZE
+        && fileSize(secondary, FM_ID_BACKUP) == FM_ID_FILE_SIZE) {
       bool ok = copyFile(secondary, FM_ID_BACKUP, primary, FM_ID_FILE);
       MESH_DEBUG_PRINTLN("IdentityBackup: identity restored %s", ok ? "OK" : "FAILED");
     }
@@ -107,14 +125,14 @@ public:
       MESH_DEBUG_PRINTLN("IdentityBackup: prefs restored %s", ok ? "OK" : "FAILED");
     }
 
-    syncOne(primary, FM_ID_FILE, secondary, FM_ID_BACKUP);
+    syncOne(primary, FM_ID_FILE, secondary, FM_ID_BACKUP, FM_ID_FILE_SIZE);
     syncOne(primary, FM_PREFS_FILE, secondary, FM_PREFS_BACKUP);
   }
 
   // after the identity was written to the primary file system
   static void identitySaved(FILESYSTEM* primary, FILESYSTEM* secondary) {
     if (primary == nullptr || secondary == nullptr) return;
-    syncOne(primary, FM_ID_FILE, secondary, FM_ID_BACKUP);
+    syncOne(primary, FM_ID_FILE, secondary, FM_ID_BACKUP, FM_ID_FILE_SIZE);
   }
 
   // after the prefs were written to the primary file system

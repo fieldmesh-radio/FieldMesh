@@ -1,5 +1,5 @@
 #pragma once
-// FieldMesh version (#17), shared by the companion and the FieldMesh repeater.
+// FieldMesh version, shared by the companion and the FieldMesh repeater.
 //
 // FIELDMESH_VERSION is set at build time by the FieldMesh workflows:
 //   FieldMesh Release     -D FIELDMESH_VERSION="v2.2.0"        (the version entered when starting it)

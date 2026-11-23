@@ -19,19 +19,19 @@ std::string sender(const char* text, int max_len = 33) {
 }  // namespace
 
 TEST(FieldMeshChannelText, SenderIsEverythingBeforeColonSpace) {
-  EXPECT_EQ("Tobi", sender("Tobi: Hello"));
-  EXPECT_EQ("Tobi M1", sender("Tobi M1: on my way"));
+  EXPECT_EQ("Alex", sender("Alex: Hello"));
+  EXPECT_EQ("Alex M1", sender("Alex M1: on my way"));
 }
 
 TEST(FieldMeshChannelText, PipeIsPartOfTheName) {
-  EXPECT_EQ("Juno48 | Region", sender("Juno48 | Region: Hello"));
+  EXPECT_EQ("Alice | Region", sender("Alice | Region: Hello"));
   EXPECT_EQ("A | B | C", sender("A | B | C: x"));
 }
 
 TEST(FieldMeshChannelText, FirstColonSpaceWins) {
   // the message itself may contain ": "
-  EXPECT_EQ("Tobi", sender("Tobi: Time: 12:30"));
-  EXPECT_EQ("Tobi", sender("Tobi: !SOS 48.7636,9.1621 bat78%"));
+  EXPECT_EQ("Alex", sender("Alex: Time: 12:30"));
+  EXPECT_EQ("Alex", sender("Alex: !SOS 48.7758,9.1829 bat78%"));
 }
 
 TEST(FieldMeshChannelText, ColonWithoutSpaceIsNotASeparator) {

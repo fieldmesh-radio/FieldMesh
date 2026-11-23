@@ -18,6 +18,46 @@ In November 2026 all FieldMesh releases were renumbered to semantic versioning (
 
 ---
 
+## [2.3.0] — Sun Times on the Repeater & Block List
+
+*November 2026*
+
+Still based on MeshCore v1.18.0. Installs over 2.2.0 — settings, contacts, channels and identity are kept.
+
+### New Features
+
+- **FieldMesh Repeater: sun times** — `!sun` (English) and `!sonne` (German) in the room answer on the board with sunrise, sunset and "daylight until" (end of civil twilight); `!sun tomorrow` / `!sonne morgen` for the next day. Computed on the box from its position and clock, no internet. Midnight sun, polar night and light nights are answered as such; without a position or before the clock is set the answer says so
+- **FieldMesh Repeater: time zone** — every phone that opens the dashboard hands over its time zone as a full POSIX rule (with daylight saving), so local times stay right after a change without a phone. Also `set tz <rule>` / `set tz none` / `get tz` and a choice in *Setup → Box* (Europe, US, Australia, NZ, UTC). Without a time zone the sun times are in UTC and marked "(UTC)". Listed in `!help` and `!commands sun`
+- **Block list (companions)** — block a node that keeps flooding adverts (e.g. with a fake position): its adverts are ignored, it is not added as a contact again and does not reach the app or the device. From the MeshCore app: direct message `!block` to the contact, or log in to a repeater/room/sensor with the password `!block`; `!blocklist`, `!unblock <n>` and `!unblock all` in any channel. The commands are never sent. Up to 8 nodes, kept in the FieldMesh prefs. Relaying in Off-Grid is not affected
+- **New builds, untested** — LilyGo T-Echo, Heltec T114, RAK WisMesh Pocket V2 (display), RAK WisMesh Tag and ThinkNode M3 (no display) are in the build check. Build from source, no release files yet
+- **MeshTracker X1: RGB LED and vibration like the T1000-E** — mode colour (green, amber in Off-Grid), short flash every 4 s or a breath while tracking, red flash on low battery, red pulse while charging, red blinking on SOS; vibration for SOS and mode changes, no longer for every message. Untested on hardware
+
+### Bug Fixes
+
+- **Identity backup** — a truncated or empty identity file was copied into the backup, and a new identity was created at the next start. Now only a complete identity (96 bytes) is backed up, and an identity of the wrong size is restored from the backup at start
+- **ThinkNode M1: no power-off on a single low reading** — the automatic shutdown at low battery now needs 3 low readings in a row (16–24 s); a normal reading or external power resets the count (idea from upstream PR #3462)
+- **GPS: only plausible positions** — a fix with a latitude outside ±90° or a longitude outside ±180° is ignored (idea from upstream PR #3626)
+
+### Changes
+
+- Repeater dashboard: the license of the Barlow font is stored on the box and linked under *Setup → Box*
+- `THIRD_PARTY_NOTICES.md` lists the libraries and licenses of the release files (the ThinkNode M1 files include GxEPD2, GPL-3.0); the web flasher ships the license texts of its parts
+- Own `CONTRIBUTING.md` and `SECURITY.md` for FieldMesh, a hardware report form in Discussions, the Wio Tracker L1 Pro is named as supported (same board as the L1)
+- README shortened and updated
+- Release drafts are titled "FieldMesh X.Y.Z"
+
+### Under the hood
+
+- Code comments describe what the code does and why, without version notes or history
+- Unit tests for the sun times, time zone rules, block list, identity backup and GPS position check
+
+### Updating from 2.2.0
+
+- Settings, contacts, channels and the identity are kept; the block list starts empty
+- Station G2: update from the dashboard (*Setup → Firmware update*, `_update.bin`) or over USB (`_full.bin` at 0x0). Open the dashboard once afterwards so the box gets the time zone
+
+---
+
 ## [2.2.0] — Smarter Off-Grid Relaying, T1000-E SOS & Web Flasher
 
 *November 2026*
@@ -86,7 +126,7 @@ Still based on MeshCore v1.18.0. One firmware file per device for all regions.
 - **ThinkNode M1 GPS switch** — the GPS runs only when the hardware switch and the setting are on; switching it on also turns the setting on
 - **Off-Grid region chosen automatically** — below 900 MHz → 869.4625 MHz (EU/UK), 900 MHz and above → 916.4625 MHz (US/AU). The alert shows the region ("Off-Grid: ON (EU)"). No separate US firmware any more
 - **Identity backup** — node identity and settings are copied to a second file system (QSPI flash on M1, L1, X1; a separate internal flash area on the T1000-E) and restored automatically if the main copy is lost. Protects against the identity reset some users saw when updating to 2.0.0. A factory reset also clears the backup
-- **SOS with battery level** — `!SOS 48.7636,9.1621 bat78%` / `!SOS no GPS bat78%`
+- **SOS with battery level** — `!SOS 48.7758,9.1829 bat78%` / `!SOS no GPS bat78%`
 - **FieldMesh Repeater for the Station G2** — a normal MeshCore repeater with:
   - **Off-Grid switch** (`set offgrid on|off`, G2 menu, dashboard), applied live without a reboot
   - **Message board** — room server as a second identity next to the repeater (`set roomserver <name>`), posts and users survive a restart
@@ -192,7 +232,7 @@ FieldMesh now runs on MeshCore v1.18.0 (previously v1.15.0). All FieldMesh featu
 - **Stale favourite info after app disconnect** — `_latest_fav_name` and `_latest_fav_time` are now reset on app sync, preventing old contact info from reappearing on HomeScreen after disconnect
 - **Double-counting nodes in online counter** — A node heard via both an advert and a message was counted twice; fixed with `countOnlineNodesExcluding()`, which only counts message-cache entries not already present in the fresh advert list
 - **Channel message title bar showed sender name redundantly** — For channel messages, the sender name was shown both in the title bar and in the message body; the title bar now shows only the channel name for channel messages and `[DM] NodeName` for direct messages
-- **Favourite detection broken for nodes with `|` in name** — Node names containing ` | ` (e.g. `Juno48 | DE.BW`) caused incorrect short-name extraction, so channel messages from such nodes were never recognised as favourites; fixed by using `": "` as the separator (consistent with MeshCore channel format `NodeName: text`)
+- **Favourite detection broken for nodes with `|` in name** — Node names containing ` | ` (e.g. `Alice | DE.BW`) caused incorrect short-name extraction, so channel messages from such nodes were never recognised as favourites; fixed by using `": "` as the separator (consistent with MeshCore channel format `NodeName: text`)
 - **BLE initialization handshake flood fixed** — After `onSecured()`, async pushes (`MSG_WAITING`, `PATH_UPDATED`) fired freely before `CMD_APP_START` arrived, filling all 12 `send_queue` slots and causing `RESP_SELF_INFO` to be silently dropped (app timeout); fixed by introducing `_app_initialized` flag gating all async pushes, plus `isWriteBusy()` guard on `MSG_WAITING` pushes
 - **Adaptive row limits on RECENT and TRACKING pages** — Both pages now use a `max_y` variable based on `display.height()` instead of hardcoded pixel values
 ---

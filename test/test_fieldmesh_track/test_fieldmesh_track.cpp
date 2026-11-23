@@ -1,5 +1,5 @@
 // FieldMesh: tests for the tracking send cadence (examples/companion_radio/TrackScheduler.h).
-// Values decided in PLAN_v6.1.md: first fix right away, >= 100 m and >= 2 min (60 s while
+// Expected behaviour: first fix right away, >= 100 m and >= 2 min (60 s while
 // moving fast) for a movement send, heartbeat every 10 min, fixes with < 4 satellites ignored.
 
 #include <gtest/gtest.h>
@@ -139,8 +139,8 @@ TEST(FieldMeshTrack, DistanceApproximation) {
   // 0.001 deg longitude at 48.8 deg N = 73.3 m
   EXPECT_NEAR(73, TrackScheduler::distanceM(LAT, LON, LAT, LON + 1000), 1);
   // ~15 km diagonal: within 0.5 % of the haversine distance
-  EXPECT_NEAR(haversineM(LAT, LON, 48710600, 9006100),
-              TrackScheduler::distanceM(LAT, LON, 48710600, 9006100), 75);
+  EXPECT_NEAR(haversineM(LAT, LON, 48841000, 9359700),
+              TrackScheduler::distanceM(LAT, LON, 48841000, 9359700), 75);
   // far away: clamped to the uint16_t range
   EXPECT_EQ(65535, TrackScheduler::distanceM(LAT, LON, LAT + 1000000, LON));
 }
