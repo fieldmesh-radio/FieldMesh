@@ -13,6 +13,7 @@
 #include "OffGrid.h"       // FieldMesh: off-grid frequency follows the region of the normal frequency
 #include "FloodPolicy.h"   // FieldMesh: Off-Grid managed flooding
 #include "FloodLog.h"      // FieldMesh: flooding diagnostics (only with -D FM_FLOOD_LOG=1)
+#include "BlockList.h"     // FieldMesh: local block list
 
 // Auto-advert interval: 5 minutes in milliseconds
 // To change, adjust the 5 and recompile
@@ -366,4 +367,140 @@ void MyMesh::checkClockJump() {
     _clk_ref_rtc = now;
     _clk_ref_ms = ms;
   }
+}
+
+// ── Block list ───────────────────────────────────────────────────────────────
+// Commands and list rules: BlockList.h. The commands are answered locally and never sent.
+
+// Companion protocol codes used for the local answers (same values as in MyMesh.cpp).
+#define FM_RESP_CODE_SENT             6
+#define FM_PUSH_CODE_SEND_CONFIRMED   0x82
+#define FM_PUSH_CODE_LOGIN_FAIL       0x86
+
+// Adverts of blocked nodes end here: no contact, no "discovered" entry, nothing for the app
+// or the UI. Mesh::onRecvPacket() still routes the packet, so relaying in Off-Grid is unchanged.
+void MyMesh::onAdvertRecv(mesh::Packet* packet, const mesh::Identity& id, uint32_t timestamp,
+                          const uint8_t* app_data, size_t app_data_len) {
+  if (_prefs.blocklist.contains(id.pub_key)) return;
+  BaseChatMesh::onAdvertRecv(packet, id, timestamp, app_data, app_data_len);
+}
+
+// Stand-in packet for messages created on this device (no radio data: direct, no path, SNR 0).
+static mesh::Packet* fmLocalPacket() {
+  static mesh::Packet pkt;
+  pkt.header = ROUTE_TYPE_DIRECT;
+  pkt.path_len = 0;
+  pkt.payload_len = 0;
+  pkt._snr = 0;
+  return &pkt;
+}
+
+// Adds a node to the list and saves it. Returns false when the list is full.
+bool MyMesh::fmBlockAdd(const ContactInfo& contact) {
+  if (_prefs.blocklist.add(contact.id.pub_key, contact.name) < 0) return false;
+  savePrefs();
+  return true;
+}
+
+// CMD_SEND_TXT_MSG: a direct message "!block" blocks the recipient instead of being sent.
+// The app gets "sent" + "delivered" (so it doesn't retry) and a local reply in the chat.
+bool MyMesh::fmBlockDirectMsg(const ContactInfo& recipient, const char* text) {
+  if (fmBlockParse(text, NULL) != FM_BLOCK_CMD_BLOCK) return false;
+
+  bool ok = fmBlockAdd(recipient);
+
+  uint32_t ack = 0;
+  while (ack == 0) getRNG()->random((uint8_t*)&ack, 4);
+  uint32_t timeout = 1000, trip = 0;
+  out_frame[0] = FM_RESP_CODE_SENT;
+  out_frame[1] = 0;   // direct
+  memcpy(&out_frame[2], &ack, 4);
+  memcpy(&out_frame[6], &timeout, 4);
+  _serial->writeFrame(out_frame, 10);
+  out_frame[0] = FM_PUSH_CODE_SEND_CONFIRMED;
+  memcpy(&out_frame[1], &ack, 4);
+  memcpy(&out_frame[5], &trip, 4);
+  _serial->writeFrame(out_frame, 9);
+
+  const char* reply = ok
+    ? "[FieldMesh] Blocked. Adverts from this node are ignored now. Delete the contact once - it won't come back."
+    : "[FieldMesh] Block list is full (8). Send !blocklist in a channel and free an entry with !unblock <n>.";
+  queueMessage(recipient, TXT_TYPE_PLAIN, fmLocalPacket(), getRTCClock()->getCurrentTimeUnique(), NULL, 0, reply);
+  return true;
+}
+
+// CMD_SEND_LOGIN: the password "!block" blocks a repeater / room server / sensor instead of
+// logging in. The app shows a failed login; "!blocklist" in a channel confirms the entry.
+bool MyMesh::fmBlockLogin(const ContactInfo& recipient, const char* password) {
+  if (fmBlockParse(password, NULL) != FM_BLOCK_CMD_BLOCK) return false;
+
+  fmBlockAdd(recipient);
+
+  uint32_t tag, timeout = 1000;
+  memcpy(&tag, recipient.id.pub_key, 4);
+  out_frame[0] = FM_RESP_CODE_SENT;
+  out_frame[1] = 0;
+  memcpy(&out_frame[2], &tag, 4);
+  memcpy(&out_frame[6], &timeout, 4);
+  _serial->writeFrame(out_frame, 10);
+  int i = 0;
+  out_frame[i++] = FM_PUSH_CODE_LOGIN_FAIL;
+  out_frame[i++] = 0;   // reserved
+  memcpy(&out_frame[i], recipient.id.pub_key, 6);
+  i += 6;
+  _serial->writeFrame(out_frame, i);
+  return true;
+}
+
+// CMD_SEND_CHANNEL_TXT_MSG: "!blocklist", "!unblock <n>", "!unblock all" (and a stray "!block")
+// are answered with a local message in the same channel instead of being sent.
+bool MyMesh::fmBlockChannelCmd(uint8_t channel_idx, const char* text, int len) {
+  char cmd[32];
+  if (text == NULL || len <= 0 || len >= (int)sizeof(cmd)) return false;   // commands are short
+  memcpy(cmd, text, len);
+  cmd[len] = 0;
+  int entry = -1;
+  FmBlockCmd c = fmBlockParse(cmd, &entry);
+  if (c == FM_BLOCK_CMD_NONE) return false;
+  ChannelDetails ch;
+  if (!getChannel(channel_idx, ch)) return false;   // normal path reports the bad channel
+
+  char reply[MAX_TEXT_LEN + 1];
+  int n = snprintf(reply, sizeof(reply), "FieldMesh: ");
+  char* body = reply + n;
+  size_t body_size = sizeof(reply) - n;
+
+  switch (c) {
+    case FM_BLOCK_CMD_LIST:
+      fmBlockListText(_prefs.blocklist, body, body_size);
+      break;
+    case FM_BLOCK_CMD_UNBLOCK_ALL: {
+      int count = _prefs.blocklist.count();
+      _prefs.blocklist.clear();
+      savePrefs();
+      snprintf(body, body_size, "Unblocked all (%d). Nodes return with their next advert.", count);
+      break;
+    }
+    case FM_BLOCK_CMD_UNBLOCK_ONE: {
+      char name[FM_BLOCK_NAME_SIZE];
+      strcpy(name, _prefs.blocklist.names[entry]);
+      if (_prefs.blocklist.remove(entry)) {
+        savePrefs();
+        snprintf(body, body_size, "Unblocked %d %s. It returns with its next advert.", entry + 1, name);
+      } else {
+        snprintf(body, body_size, "No entry %d. Send !blocklist.", entry + 1);
+      }
+      break;
+    }
+    case FM_BLOCK_CMD_BLOCK:
+      snprintf(body, body_size, "To block a node, send !block as a direct message to it (repeater: log in with password !block).");
+      break;
+    default:   // FM_BLOCK_CMD_INVALID
+      snprintf(body, body_size, "Use !unblock <1-%d> or !unblock all.", FM_BLOCK_MAX);
+      break;
+  }
+
+  writeOKFrame();
+  onChannelMessageRecv(ch.channel, fmLocalPacket(), getRTCClock()->getCurrentTimeUnique(), reply);
+  return true;
 }
