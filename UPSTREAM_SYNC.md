@@ -36,7 +36,7 @@ git diff <upstream-tag> HEAD --stat -- src variants examples platformio.ini
 ### 1. FieldMesh-only files - no conflicts
 
 `examples/companion_radio/`: `MyMeshFieldMesh.cpp`, `OffGrid.h`, `GpsCycle.h`, `TrackScheduler.h`,
-`ChannelText.h`, `IdentityBackup.h`, `GpsLog.h`, `FloodPolicy.h`, `FloodLog.h` ·
+`ChannelText.h`, `IdentityBackup.h`, `GpsLog.h`, `FloodPolicy.h`, `FloodLog.h`, `BlockList.h` ·
 `examples/simple_repeater/`: `FieldMesh*.cpp`, `FieldMesh*.h`, `web/` (dashboard page, font, contour lines, `fm_web_assets.py`) ·
 `variants/station_g2/partitions_fieldmesh.csv` · `test/test_fieldmesh_*` ·
 `.github/workflows/fieldmesh-*.yml` · `.github/ISSUE_TEMPLATE/` · `.github/CONTRIBUTING.md`, `.github/SECURITY.md` · `docs/FieldMesh/` (images, web flasher) · `README.md`, `RELEASE.md`,
@@ -55,9 +55,9 @@ equivalent place.
 
 | File | FieldMesh change |
 |---|---|
-| `MyMesh.h` | includes `GpsCycle.h`, `TrackScheduler.h`, `FieldMeshVersion.h`; `AdvertPath`: `has_gps`, `gps_timestamp`; `Listener::onClockAdjusted()`; one FieldMesh block at the end of the class (members, `getCADFailMaxDuration()` override, public API) |
-| `MyMesh.cpp` | `_app_initialized` guard in `logRxRaw`, `onContactPathUpdated`, `queueMessage`, `onChannelMessageRecv`, `checkSerialInterface`, set in `CMD_APP_START` · `fmNoteAdvertGps()` in `onDiscoveredContact` · `sendFloodScoped`: un-scoped while repeat is on (#25) · `getRetransmitDelay`: `fmRelayDelay()` while Off-Grid · `calcFloodTimeoutMillisFor`: `+ fmFloodTimeoutExtra()` · `fmBegin()` in `begin()` · `repeat_freq_ranges[]` (`#else` branch: FieldMesh ranges, **never replace with upstream values**) · `fmOnNetworkChange()` in `CMD_SET_RADIO_PARAMS` · `fmFilterRelay()` in `filterRecvFloodPacket` (Off-Grid) · `fmUpdateAutoAdvertTimer()` in `CMD_SET_OTHER_PARAMS` · `reportSetting()` in the sensor settings list · `fmLoop()` at the end of `loop()` · `advert()`: `fmCreateSelfAdvert()` / `fmSendSelfAdvert()` · `fmAppVersion(FIRMWARE_VERSION)` instead of `FIRMWARE_VERSION` in `CMD_DEVICE_QUERY` and the CLI `ver` |
-| `NodePrefs.h` | `normal_freq/bw/sf/cr`; JSON object `"fm"` (`FieldMeshPrefs`) - FieldMesh prefs never go into upstream objects |
+| `MyMesh.h` | includes `GpsCycle.h`, `TrackScheduler.h`, `FieldMeshVersion.h`; `AdvertPath`: `has_gps`, `gps_timestamp`; `Listener::onClockAdjusted()`; one FieldMesh block at the end of the class (members, `getCADFailMaxDuration()` and `onAdvertRecv()` overrides, public API) |
+| `MyMesh.cpp` | `_app_initialized` guard in `logRxRaw`, `onContactPathUpdated`, `queueMessage`, `onChannelMessageRecv`, `checkSerialInterface`, set in `CMD_APP_START` · `fmNoteAdvertGps()` in `onDiscoveredContact` · `sendFloodScoped`: un-scoped while repeat is on (#25) · `getRetransmitDelay`: `fmRelayDelay()` while Off-Grid · `calcFloodTimeoutMillisFor`: `+ fmFloodTimeoutExtra()` · `fmBegin()` in `begin()` · `repeat_freq_ranges[]` (`#else` branch: FieldMesh ranges, **never replace with upstream values**) · `fmOnNetworkChange()` in `CMD_SET_RADIO_PARAMS` · `fmFilterRelay()` in `filterRecvFloodPacket` (Off-Grid) · `fmUpdateAutoAdvertTimer()` in `CMD_SET_OTHER_PARAMS` · `reportSetting()` in the sensor settings list · `fmLoop()` at the end of `loop()` · `advert()`: `fmCreateSelfAdvert()` / `fmSendSelfAdvert()` · `fmAppVersion(FIRMWARE_VERSION)` instead of `FIRMWARE_VERSION` in `CMD_DEVICE_QUERY` and the CLI `ver` · block list: `fmBlockDirectMsg()` in `CMD_SEND_TXT_MSG`, `fmBlockChannelCmd()` in `CMD_SEND_CHANNEL_TXT_MSG`, `fmBlockLogin()` in `CMD_SEND_LOGIN` |
+| `NodePrefs.h` | `normal_freq/bw/sf/cr`, `blocklist`; JSON object `"fm"` (`FieldMeshPrefs`) - FieldMesh prefs never go into upstream objects |
 | `DataStore.cpp` | `IdentityBackup` hooks (begin, identity saved, prefs saved); binary migration reads the FieldMesh fields at the end of old pref files |
 | `main.cpp` | static BLE PIN (no random PIN on display devices); `FM_GPS_LOG` diagnostic build |
 
