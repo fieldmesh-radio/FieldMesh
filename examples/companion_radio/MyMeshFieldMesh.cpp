@@ -98,6 +98,29 @@ void MyMesh::toggleOffGrid() {
   advert();  // RX restart via normal TX->RX cycle of the wrapper
 }
 
+// Radio settings from the app (CMD_SET_RADIO_PARAMS), called before they are applied.
+// Units as the app sends them: freq in kHz, bw in Hz.
+void MyMesh::fmOnAppRadioParams(uint32_t& freq, uint32_t& bw, uint8_t& sf, uint8_t& cr, bool repeat) {
+  bool active = _prefs.isRepeatEn();
+  if (!active && repeat) {
+    // Off-Grid switched on from the app: keep the values in use now as the normal
+    // parameters, so switching Off-Grid off on the device returns to them
+    _prefs.normal_freq = _prefs.freq;
+    _prefs.normal_bw   = _prefs.bw;
+    _prefs.normal_sf   = _prefs.sf;
+    _prefs.normal_cr   = _prefs.cr;
+    return;   // saved together with the new values
+  }
+  bool same = offGridSameRadio(freq / 1000.0f, bw / 1000.0f, sf, cr,
+                               _prefs.freq, _prefs.bw, _prefs.sf, _prefs.cr);
+  if (offGridAppRestoresNormal(active, repeat, same, _prefs.normal_freq)) {
+    freq = (uint32_t)lroundf(_prefs.normal_freq * 1000.0f);
+    bw   = (uint32_t)lroundf(_prefs.normal_bw * 1000.0f);
+    sf   = _prefs.normal_sf;
+    cr   = _prefs.normal_cr;
+  }
+}
+
 // send the SOS message to the SOS channel
 // Searches for a channel named "SOS" and sends "!SOS <pos>" or "!SOS no GPS"
 bool MyMesh::isSosChannel(const char* name) {

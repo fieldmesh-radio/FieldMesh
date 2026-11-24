@@ -72,6 +72,32 @@ TEST(FieldMeshOffGrid, ModemSettings) {
   EXPECT_EQ(5, OFFGRID_CR);
 }
 
+TEST(FieldMeshOffGrid, AppRoundedFrequencyCountsAsSameRadio) {
+  // the app sends whole kHz: 869.4625 MHz comes back as 869462 or 869463 kHz
+  EXPECT_TRUE(offGridSameRadio(869462 / 1000.0f, 125000 / 1000.0f, 11, 5,
+                               OFFGRID_FREQ_EU, OFFGRID_BW, OFFGRID_SF, OFFGRID_CR));
+  EXPECT_TRUE(offGridSameRadio(916463 / 1000.0f, 125.0f, 11, 5,
+                               OFFGRID_FREQ_US, OFFGRID_BW, OFFGRID_SF, OFFGRID_CR));
+}
+
+TEST(FieldMeshOffGrid, ChangedRadioValuesAreNotTheSame) {
+  EXPECT_FALSE(offGridSameRadio(869.525f, 250.0f, 11, 5, OFFGRID_FREQ_EU, OFFGRID_BW, OFFGRID_SF, OFFGRID_CR));
+  EXPECT_FALSE(offGridSameRadio(869.4625f, 62.5f, 11, 5, OFFGRID_FREQ_EU, OFFGRID_BW, OFFGRID_SF, OFFGRID_CR));
+  EXPECT_FALSE(offGridSameRadio(869.4625f, 125.0f, 10, 5, OFFGRID_FREQ_EU, OFFGRID_BW, OFFGRID_SF, OFFGRID_CR));
+  EXPECT_FALSE(offGridSameRadio(869.4625f, 125.0f, 11, 6, OFFGRID_FREQ_EU, OFFGRID_BW, OFFGRID_SF, OFFGRID_CR));
+}
+
+TEST(FieldMeshOffGrid, AppRepeatOffWithUnchangedValuesLeavesOffGrid) {
+  EXPECT_TRUE(offGridAppRestoresNormal(true, false, true, 869.618f));
+}
+
+TEST(FieldMeshOffGrid, AppKeepsItsOwnRadioValues) {
+  EXPECT_FALSE(offGridAppRestoresNormal(true, false, false, 869.618f));   // new values from the app
+  EXPECT_FALSE(offGridAppRestoresNormal(true, true, true, 869.618f));     // repeat stays on
+  EXPECT_FALSE(offGridAppRestoresNormal(false, false, true, 869.618f));   // Off-Grid was off
+  EXPECT_FALSE(offGridAppRestoresNormal(true, false, true, 0.0f));        // no normal values saved
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
