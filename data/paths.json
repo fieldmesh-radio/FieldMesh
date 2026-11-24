@@ -1238,5 +1238,67 @@
    "title": "/discussions",
    "uniques": 2
   }
+ ],
+ "2026-11-24": [
+  {
+   "count": 100,
+   "path": "/fieldmesh-radio/FieldMesh",
+   "title": "Overview",
+   "uniques": 63
+  },
+  {
+   "count": 11,
+   "path": "/fieldmesh-radio/FieldMesh/releases/tag/v2.2.0",
+   "title": "/releases/tag/v2.2.0",
+   "uniques": 9
+  },
+  {
+   "count": 10,
+   "path": "/fieldmesh-radio/FieldMesh/discussions/56",
+   "title": "/discussions/56",
+   "uniques": 9
+  },
+  {
+   "count": 8,
+   "path": "/fieldmesh-radio/FieldMesh/releases",
+   "title": "/releases",
+   "uniques": 6
+  },
+  {
+   "count": 8,
+   "path": "/fieldmesh-radio/FieldMesh/releases/tag/v2.3.0",
+   "title": "/releases/tag/v2.3.0",
+   "uniques": 5
+  },
+  {
+   "count": 6,
+   "path": "/fieldmesh-radio/FieldMesh/discussions/39",
+   "title": "/discussions/39",
+   "uniques": 5
+  },
+  {
+   "count": 6,
+   "path": "/fieldmesh-radio/FieldMesh/releases/tag/v2.1.0",
+   "title": "/releases/tag/v2.1.0",
+   "uniques": 3
+  },
+  {
+   "count": 5,
+   "path": "/fieldmesh-radio/FieldMesh/discussions",
+   "title": "/discussions",
+   "uniques": 2
+  },
+  {
+   "count": 5,
+   "path": "/fieldmesh-radio/FieldMesh/branches",
+   "title": "/branches",
+   "uniques": 1
+  },
+  {
+   "count": 4,
+   "path": "/fieldmesh-radio/FieldMesh/actions",
+   "title": "/actions",
+   "uniques": 1
+  }
  ]
 }

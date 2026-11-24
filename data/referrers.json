@@ -953,5 +953,57 @@
    "referrer": "tobiasguertler.de",
    "uniques": 1
   }
+ ],
+ "2026-11-24": [
+  {
+   "count": 22,
+   "referrer": "Google",
+   "uniques": 12
+  },
+  {
+   "count": 14,
+   "referrer": "github.com",
+   "uniques": 8
+  },
+  {
+   "count": 13,
+   "referrer": "reddit.com",
+   "uniques": 12
+  },
+  {
+   "count": 9,
+   "referrer": "fieldmesh-radio.github.io",
+   "uniques": 7
+  },
+  {
+   "count": 2,
+   "referrer": "search.brave.com",
+   "uniques": 2
+  },
+  {
+   "count": 2,
+   "referrer": "hamradio.my",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "com.reddit.frontpage",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "ecosia.org",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "old.reddit.com",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "tobiasguertler.de",
+   "uniques": 1
+  }
  ]
 }
