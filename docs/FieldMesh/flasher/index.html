@@ -48,7 +48,9 @@
   .stripes { display: flex; align-items: center; gap: 6px; padding-top: 16px; }
   .stripes span { width: 14px; height: 6px; background: var(--accent); transform: skewX(-30deg); }
   .stripes i { flex: 1; height: 1px; background: var(--border); margin-left: 8px; }
-  main { display: flex; flex-direction: column; gap: 24px; padding-top: 32px; padding-bottom: 32px; }
+  /* main.wrap: .wrap alone would reset the top and bottom padding to 0 */
+  main.wrap { display: flex; flex-direction: column; gap: 24px; padding-top: 32px; padding-bottom: 32px; }
+  footer { margin-top: 96px; }
   .label { font-family: var(--cond); font-weight: 700; font-size: 14px; letter-spacing: .24em; color: var(--muted); margin: 0 0 10px; }
   .card { padding: 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); }
   .muted { color: var(--muted); font-size: 14px; line-height: 1.45; }
@@ -58,7 +60,10 @@
          border: 1.5px solid var(--border2); border-radius: 8px; background: var(--surface); cursor: pointer; }
   .dev input { position: absolute; opacity: 0; pointer-events: none; }
   .dev b { display: block; font-size: 17px; }
-  .dev .role { color: var(--muted); font-size: 14px; }
+  .dev .desc { color: var(--muted); font-size: 14px; }
+  .group + .group { margin-top: 22px; }
+  .group h3 { font-family: var(--cond); font-weight: 700; font-size: 18px; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 2px; }
+  .group p { margin: 0 0 10px; }
   .dev .kind { font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: .08em; padding: 2px 7px; border-radius: 4px;
                background: var(--border); color: var(--text2); white-space: nowrap; }
   .dev:has(input:checked) { border-color: var(--accent); background: var(--sel-bg); }
@@ -116,7 +121,7 @@
 
   <section>
     <h2 class="label">01 · CHOOSE YOUR DEVICE</h2>
-    <div class="devices" id="devices"></div>
+    <div id="devices"></div>
   </section>
 
   <section class="hidden" id="flashCard">
@@ -251,10 +256,30 @@ async function init() {
   a.href = firmware.releaseUrl; a.textContent = "release notes";
   $("version").append(a);
 
-  const list = $("devices");
+  // one group per role, companions first; a role without a text below gets a plain heading
+  const groups = {};
+  const roleText = {
+    "Companion": "The node you carry. Works on its own, with or without the MeshCore app.",
+    "Repeater": "The FieldMesh Repeater: a box you take along to camp or festival, with message board, WiFi dashboard and Off-Grid switch.",
+  };
+  const groupFor = (role) => {
+    if (groups[role]) return groups[role];
+    const g = document.createElement("div"); g.className = "group";
+    const h = document.createElement("h3"); h.textContent = role;
+    g.append(h);
+    if (roleText[role]) {
+      const p = document.createElement("p"); p.className = "muted"; p.textContent = roleText[role];
+      g.append(p);
+    }
+    const grid = document.createElement("div"); grid.className = "devices";
+    g.append(grid);
+    $("devices").append(g);
+    return (groups[role] = grid);
+  };
   const dl = $("downloads");
   dl.append("Manual download: ");
   firmware.devices.forEach((d, i) => {
+    const list = groupFor(d.role || "Other");
     const label = document.createElement("label");
     label.className = "dev";
     const input = document.createElement("input");
@@ -262,7 +287,7 @@ async function init() {
     input.addEventListener("change", () => selectDevice(d));
     const text = document.createElement("span");
     const b = document.createElement("b"); b.textContent = d.name;
-    const s = document.createElement("span"); s.className = "role"; s.textContent = d.role;
+    const s = document.createElement("span"); s.className = "desc"; s.textContent = d.desc || "";
     text.append(b, s);
     const kind = document.createElement("span"); kind.className = "kind";
     kind.textContent = d.platform === "esp32" ? "ESP32" : "nRF52";
