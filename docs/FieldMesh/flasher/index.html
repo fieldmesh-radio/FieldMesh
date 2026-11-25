@@ -48,7 +48,9 @@
   .stripes { display: flex; align-items: center; gap: 6px; padding-top: 16px; }
   .stripes span { width: 14px; height: 6px; background: var(--accent); transform: skewX(-30deg); }
   .stripes i { flex: 1; height: 1px; background: var(--border); margin-left: 8px; }
-  main { display: flex; flex-direction: column; gap: 24px; padding-top: 32px; padding-bottom: 32px; }
+  /* main.wrap: .wrap alone would reset the top and bottom padding to 0 */
+  main.wrap { display: flex; flex-direction: column; gap: 24px; padding-top: 32px; padding-bottom: 32px; }
+  footer { margin-top: 32px; }
   .label { font-family: var(--cond); font-weight: 700; font-size: 14px; letter-spacing: .24em; color: var(--muted); margin: 0 0 10px; }
   .card { padding: 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); }
   .muted { color: var(--muted); font-size: 14px; line-height: 1.45; }
