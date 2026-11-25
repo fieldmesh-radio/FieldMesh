@@ -8,6 +8,12 @@
 # With "create_release" unticked it only builds; the files are under the run's artifacts.
 # The firmware shows the entered version (FIELDMESH_VERSION, see FieldMeshVersion.h).
 #
+# Adding a device to a published release (it was tested on that version's code):
+# enter the version, the device(s) and tick "attach_to_existing". The files are then
+# built from the release's tag and added to the existing release; files that are already
+# there are never replaced. Afterwards run "FieldMesh Flasher" so the web flasher offers
+# the new files.
+#
 # Only devices tested on hardware get prebuilt files (see README).
 name: FieldMesh Release
 
@@ -18,27 +24,31 @@ on:
         description: 'Version, e.g. v2.2.0'
         required: true
         type: string
+      devices:
+        description: 'Only these devices (build environments, comma-separated). Empty = all'
+        required: false
+        type: string
+        default: ''
       create_release:
         description: 'Create a draft release with the files'
         required: true
         type: boolean
         default: true
+      attach_to_existing:
+        description: 'Add the files to the existing release of this version (built from its tag)'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  # check the inputs and pick the devices to build
+  prepare:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        environment:
-          - ThinkNode_M1_companion_radio_ble
-          - WioTrackerL1_companion_radio_ble
-          - t1000e_companion_radio_ble
-          - Station_G2_fieldmesh_repeater
-
+    outputs:
+      envs: ${{ steps.pick.outputs.envs }}
     steps:
       - name: Check version
         env:
@@ -49,8 +59,60 @@ jobs:
             exit 1
           fi
 
+      - name: Check release
+        if: ${{ inputs.attach_to_existing }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if ! gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null; then
+            echo "There is no release '$VERSION' to add files to"
+            exit 1
+          fi
+
+      # every device with prebuilt files - add a device here once it was tested on hardware
+      - name: Pick devices
+        id: pick
+        env:
+          ONLY: ${{ inputs.devices }}
+        run: |
+          ALL="ThinkNode_M1_companion_radio_ble
+          WioTrackerL1_companion_radio_ble
+          t1000e_companion_radio_ble
+          LilyGo_T-Echo_companion_radio_ble
+          MeshTracker_X1_companion_radio_ble
+          Station_G2_fieldmesh_repeater
+          heltec_v4_fieldmesh_repeater"
+          if [ -z "$ONLY" ]; then
+            PICK="$ALL"
+          else
+            PICK=$(echo "$ONLY" | tr ',' ' ')
+          fi
+          for e in $PICK; do
+            if ! printf '%s\n' $ALL | grep -qx "$e"; then
+              echo "Unknown device '$e'. Known devices:"
+              printf '  %s\n' $ALL
+              exit 1
+            fi
+          done
+          ENVS=$(printf '%s\n' $PICK | jq -R . | jq -cs .)
+          echo "Devices: $ENVS"
+          echo "envs=$ENVS" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        environment: ${{ fromJSON(needs.prepare.outputs.envs) }}
+
+    steps:
+      # attaching to a release: build the code of its tag, not of the selected branch
       - name: Clone Repo
         uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.attach_to_existing && inputs.version || '' }}
 
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-environment
@@ -94,7 +156,7 @@ jobs:
 
   release:
     needs: build
-    if: ${{ inputs.create_release }}
+    if: ${{ inputs.create_release && !inputs.attach_to_existing }}
     runs-on: ubuntu-latest
 
     steps:
@@ -120,3 +182,25 @@ jobs:
           body: "Paste the release notes here."
           draft: true
           files: out/*
+
+  # add the files to a published release; no --clobber: an existing file is never replaced
+  attach:
+    needs: build
+    if: ${{ inputs.attach_to_existing }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download files
+        uses: actions/download-artifact@v8
+        with:
+          merge-multiple: true
+          path: out
+
+      - name: Add files to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          ls -la out
+          gh release upload "$VERSION" out/* --repo "$GITHUB_REPOSITORY"
+          echo "Added to $VERSION. Now run 'FieldMesh Flasher' so the web flasher offers the new files."
