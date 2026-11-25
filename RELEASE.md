@@ -24,6 +24,8 @@ In November 2026 all FieldMesh releases were renumbered to semantic versioning (
 
 Still based on MeshCore v1.18.0. Installs over 2.2.0 — settings, contacts, channels and identity are kept.
 
+**Added on 25 Nov 2026:** release files and web flasher entries for the LilyGo T-Echo, the SenseCAP MeshTracker X1 and the Heltec V4 (FieldMesh Repeater), built from the `v2.3.0` tag after community tests on hardware. The web flasher lists companions and repeaters separately.
+
 ### New Features
 
 - **FieldMesh Repeater: sun times** — `!sun` (English) and `!sonne` (German) in the room answer on the board with sunrise, sunset and "daylight until" (end of civil twilight); `!sun tomorrow` / `!sonne morgen` for the next day. Computed on the box from its position and clock, no internet. Midnight sun, polar night and light nights are answered as such; without a position or before the clock is set the answer says so
