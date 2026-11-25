@@ -3,6 +3,7 @@
     "id": "m1",
     "name": "Elecrow ThinkNode M1",
     "role": "Companion",
+    "desc": "E-Ink display, GPS",
     "platform": "nrf52",
     "env": "ThinkNode_M1_companion_radio_ble",
     "suffix": ".zip"
@@ -11,26 +12,58 @@
     "id": "l1",
     "name": "Seeed Wio Tracker L1 / L1 Pro",
     "role": "Companion",
+    "desc": "OLED display, joystick",
     "platform": "nrf52",
     "env": "WioTrackerL1_companion_radio_ble",
+    "suffix": ".zip"
+  },
+  {
+    "id": "techo",
+    "name": "LilyGo T-Echo",
+    "role": "Companion",
+    "desc": "E-Ink display, GPS",
+    "platform": "nrf52",
+    "env": "LilyGo_T-Echo_companion_radio_ble",
     "suffix": ".zip"
   },
   {
     "id": "t1000e",
     "name": "Seeed T1000-E",
     "role": "Companion",
+    "desc": "Card tracker, no display",
     "platform": "nrf52",
     "env": "t1000e_companion_radio_ble",
     "suffix": ".zip"
   },
   {
+    "id": "x1",
+    "name": "SenseCAP MeshTracker X1",
+    "role": "Companion",
+    "desc": "Tracker, no display",
+    "platform": "nrf52",
+    "env": "MeshTracker_X1_companion_radio_ble",
+    "suffix": ".zip"
+  },
+  {
     "id": "g2",
     "name": "Station G2",
-    "role": "FieldMesh Repeater",
+    "role": "Repeater",
+    "desc": "Base station with display",
     "platform": "esp32",
     "chip": "ESP32-S3",
     "env": "Station_G2_fieldmesh_repeater",
     "suffix": "_full.bin",
     "bootHint": "Hold the firmware download button, press reset briefly, release the download button, then click Flash again."
+  },
+  {
+    "id": "v4",
+    "name": "Heltec V4",
+    "role": "Repeater",
+    "desc": "With or without OLED",
+    "platform": "esp32",
+    "chip": "ESP32-S3",
+    "env": "heltec_v4_fieldmesh_repeater",
+    "suffix": "_full.bin",
+    "bootHint": "Hold the PRG button, press RST briefly, release PRG, then click Flash again."
   }
 ]

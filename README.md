@@ -26,7 +26,7 @@ MeshCore is a great platform, but some things that matter in the field require m
 - **Off-Grid mode** — one press switches your group to its own frequency (picked automatically for your region) where every node relays
 - **SOS** — send and receive emergency alerts with a buzzer alarm, even if your phone isn't connected
 - **Messages without a phone** — read received messages on the device; write channel messages on the Wio Tracker L1
-- **FieldMesh Repeater** — turns a Station G2 into a base station for your camp: repeater, message board, SOS display, weather, sun times and a WiFi dashboard for phones
+- **FieldMesh Repeater** — turns a Station G2 or Heltec V4 into a base station for your camp: repeater, message board, SOS display, weather, sun times and a WiFi dashboard for phones
 
 The goal is a node you can put in your backpack, forget about, and trust that it's doing its job. More about the motivation in my [blog post](https://www.tobiasguertler.de/blog/en/fieldmesh).
 
@@ -36,10 +36,13 @@ The goal is a node you can put in your backpack, forget about, and trust that it
 |---|---|---|
 | **Elecrow ThinkNode M1** | Tracker with E-Ink display, GPS switch, one button, buzzer | `ThinkNode_M1_companion_radio_ble_FieldMesh…zip` |
 | **Seeed Wio Tracker L1 / L1 Pro** | Tracker with OLED display and joystick (can write messages); the L1 Pro is the same board with case and battery | `WioTrackerL1_companion_radio_ble_FieldMesh…zip` |
+| **LilyGo T-Echo** | Tracker with E-Ink display and GPS; buttons like the ThinkNode M1 | `LilyGo_T-Echo_companion_radio_ble_FieldMesh…zip` |
 | **Seeed T1000-E** | Card-sized tracker without display, one button, buzzer | `t1000e_companion_radio_ble_FieldMesh…zip` |
+| **SenseCAP MeshTracker X1** | Tracker without display, one button, buzzer, RGB LED and vibration | `MeshTracker_X1_companion_radio_ble_FieldMesh…zip` |
 | **Station G2** | FieldMesh Repeater — base station for a camp or a tour | `Station_G2_fieldmesh_repeater_FieldMesh…_full.bin` |
+| **Heltec V4** | FieldMesh Repeater on a small board, with or without OLED | `heltec_v4_fieldmesh_repeater_FieldMesh…_full.bin` |
 
-The trackers are normal MeshCore companions: pair them with the MeshCore app as usual. All FieldMesh features also work without the phone.
+The trackers are normal MeshCore companions: pair them with the MeshCore app as usual. All FieldMesh features also work without the phone. The T-Echo, the X1 and the Heltec V4 were tested by the community.
 
 Other devices can be [built from source](#building-from-source) but are not tested on hardware and have no prebuilt firmware.
 
@@ -50,8 +53,8 @@ Other devices can be [built from source](#building-from-source) but are not test
 1. Open the **[FieldMesh Web Flasher](https://fieldmesh-radio.github.io/FieldMesh/)** in **Chrome or Edge on a computer** (Windows, macOS, Linux). Phones and Safari do not work.
 2. Connect the device with a USB **data** cable and pick it in the list.
 3. Follow the two or three steps on the page:
-   - **ThinkNode M1, Wio Tracker L1, T1000-E:** *Start update mode*, then *Flash* (pick the port again — its name may change).
-   - **Station G2:** *Flash*. If the G2 is not found: hold the download button, press reset briefly, release, click *Flash* again.
+   - **Trackers:** *Start update mode*, then *Flash* (pick the port again — its name may change).
+   - **Repeaters:** *Flash*. If the board is not found, put it into download mode and click *Flash* again — Station G2: hold the download button, press reset briefly, release; Heltec V4: the same with PRG and RST.
 
 The flasher installs the current release, for the first installation and for every update. It never erases the device.
 
@@ -66,8 +69,8 @@ The flasher installs the current release, for the first installation and for eve
 
 Download the file for your device from the [latest release](../../releases/latest) (see [Supported devices](#supported-devices)).
 
-- **ThinkNode M1, Wio Tracker L1, T1000-E:** flash the `.zip` with the [MeshCore Flasher](https://flasher.meshcore.io) as custom firmware.
-- **Station G2:** write the `…_full.bin` at address **0x0** with a web ESP flasher — [esptool-js](https://espressif.github.io/esptool-js/) or, if that is down, the [Adafruit WebSerial ESPTool](https://adafruit.github.io/Adafruit_WebSerial_ESPTool/) (offset `0`). Do **not** use *Erase*. Download mode: hold the download button, press reset briefly, release.
+- **Trackers:** flash the `.zip` with the [MeshCore Flasher](https://flasher.meshcore.io) as custom firmware.
+- **Repeaters:** write the `…_full.bin` at address **0x0** with a web ESP flasher — [esptool-js](https://espressif.github.io/esptool-js/) or, if that is down, the [Adafruit WebSerial ESPTool](https://adafruit.github.io/Adafruit_WebSerial_ESPTool/) (offset `0`). Do **not** use *Erase*. Download mode: hold the download button, press reset briefly, release.
 
 ### Updating the repeater
 
@@ -91,7 +94,9 @@ The ESP32 has two app slots. An update from the dashboard is written to the slot
 
 More pictures: [UI images](docs/FieldMesh/images/)
 
-### ThinkNode M1 and Wio Tracker L1 (display)
+### ThinkNode M1, LilyGo T-Echo and Wio Tracker L1 (display)
+
+The T-Echo works like the ThinkNode M1.
 
 **Pages** (left to right): Messages · Recent · Tracking · Radio · GPS · Sensors (where available) · Repeater discovery · SOS
 
@@ -115,7 +120,9 @@ In the message history a short press shows the next message, a long press clears
 
 **ThinkNode M1 GPS switch:** the GPS only runs when the hardware switch **and** the GPS setting are on. Turning the switch on also turns the setting on.
 
-### T1000-E (no display)
+### T1000-E and MeshTracker X1 (no display)
+
+Both work the same; the X1 also vibrates when Off-Grid or tracking is switched and on an SOS alarm, and has its own [LED](#meshtracker-x1-led).
 
 | Button | Action |
 |---|---|
@@ -143,7 +150,7 @@ Every action answers with a tone, even when the buzzer is muted:
 | Three short low tones | SOS not sent — no SOS channel |
 | Continuous siren | SOS alarm received — press once to acknowledge |
 
-**Status LED:**
+**Status LED (T1000-E):**
 
 | LED | Meaning |
 |---|---|
@@ -153,7 +160,9 @@ Every action answers with a tone, even when the buzzer is muted:
 | Blinking faster and faster | SOS countdown |
 | Fast blinking | SOS alarm received |
 
-Off-Grid, charging and low battery are not shown on the LED.
+Off-Grid, charging and low battery are not shown on the T1000-E LED.
+
+<a id="meshtracker-x1-led"></a>**MeshTracker X1 LED** (RGB): a short flash every 4 s — green normally, amber in Off-Grid; while tracking it breathes slowly in the same colour instead. A red second flash means low battery. On the charger it pulses red, and shows dim steady green when full. SOS countdown and alarm blink red.
 
 To check the Off-Grid state: press 5× and listen (ascending = was off, now on; descending = was on, now off), then press 5× again to return to the original state.
 
@@ -254,7 +263,7 @@ You use it from the MeshCore app. The commands are caught by FieldMesh and never
 
 Up to 8 nodes; the list survives restarts and updates. Messages that only start with `!block` (e.g. "!block the road") are sent normally.
 
-## FieldMesh Repeater (Station G2)
+## FieldMesh Repeater (Station G2, Heltec V4)
 
 <p align="center">
   <img src="docs/FieldMesh/images/repeater_dashboard_board.png" width="24%">
@@ -263,7 +272,7 @@ Up to 8 nodes; the list survives restarts and updates. Messages that only start 
   <img src="docs/FieldMesh/images/repeater_dashboard_network.png" width="24%">
 </p>
 
-The FieldMesh Repeater turns a **Station G2** into a base station for a camp, a festival or a multi-day tour — for example in a box with a power station. It is a normal MeshCore repeater (all repeater settings and CLI commands work as usual) with these additions:
+The FieldMesh Repeater turns a **Station G2** or a **Heltec V4** into a base station for a camp, a festival or a multi-day tour — for example in a box with a power station. It is a normal MeshCore repeater (all repeater settings and CLI commands work as usual) with these additions:
 
 - **Off-Grid** — switch the whole repeater to the Off-Grid frequency of your FieldMesh nodes and back, from the menu, the CLI or the dashboard
 - **Message board** — a room server as a **second identity** next to the repeater (own name and key, e.g. "BaseCamp"); the repeater keeps repeating
@@ -273,20 +282,20 @@ The FieldMesh Repeater turns a **Station G2** into a base station for a camp, a 
 - **Weather** — phones in the WiFi that have mobile data load a 48 h forecast for the box; `!weather` (or `!wetter` in German) answers in the room even when nobody has internet out in the field
 - **Sun times** (v2.3) — `!sun` (or `!sonne` in German) gives sunrise, sunset and how long there is light outside, computed on the box from its position, completely offline
 
-FieldMesh never changes the transmit power — keep the manufacturer's recommended setting for the Station G2.
+FieldMesh never changes the transmit power — keep the manufacturer's recommended setting for your board.
 
 ### Getting started
 
 1. **Install** the FieldMesh Repeater — see [Install & update](#install--update). Coming from a stock MeshCore repeater: back up the key first.
 2. **Set the repeater up as usual** (name, admin password, radio preset, location) with the MeshCore app or the CLI. Set the box position with `set lat` / `set lon` or later in the dashboard — it is needed for distances, the radar, the weather and the sun times.
-3. **Turn on the board:** `set roomserver BaseCamp` (or *Room* in the G2 menu). Optional password: `set room.pass <pw>`.
-4. **Turn on the WiFi dashboard:** `set wifi on` (or *WiFi* in the G2 menu). The WiFi is named after the room (or after the repeater while the room is off).
+3. **Turn on the board:** `set roomserver BaseCamp` (or *Room* in the menu on the display). Optional password: `set room.pass <pw>`.
+4. **Turn on the WiFi dashboard:** `set wifi on` (or *WiFi* in the menu on the display). The WiFi is named after the room (or after the repeater while the room is off).
 5. **Stick a QR code on the box** pointing to `http://192.168.4.1`. Phones join the WiFi, open the address and are moved on to `http://<room name>.local` where supported (e.g. "BaseCamp" → `http://basecamp.local`).
 6. **Optional:** log in under *Setup* with the repeater admin password, add your SOS channel (e.g. `#sos`) and star your team members in *Mesh*.
 
-### Menu on the G2
+### Menu on the display
 
-Short press = next page, long press = action. The display always wakes up on the status page.
+Station G2 and Heltec V4 with OLED. Short press = next page, long press = action. The display always wakes up on the status page.
 
 | Page | Long press |
 |---|---|
@@ -329,7 +338,7 @@ The dashboard is an open WiFi on the box (up to 10 phones) and a web page that w
 | **Mesh → Network** | Box status, activity of the last hour, airtime, packet types, neighbour repeaters, hash collisions, live packets |
 | **Setup** | Theme; after login with the repeater admin password: Off-Grid, room (name, password, clean up), SOS channels, box position, weather, time zone, firmware update, WiFi off |
 
-There is **no captive portal**: the WiFi tells phones that it has no internet (like a printer), so phones keep using mobile data for everything else and people who only see the WiFi name are not led to the dashboard. Phones that open the page set the box clock (the G2 has no battery-backed clock; it only ever moves forward) and its time zone.
+There is **no captive portal**: the WiFi tells phones that it has no internet (like a printer), so phones keep using mobile data for everything else and people who only see the WiFi name are not led to the dashboard. Phones that open the page set the box clock (the box has no battery-backed clock; it only ever moves forward) and its time zone.
 
 **Box position:** in *Setup* paste coordinates or a map link — e.g. from Apple Maps (blue dot → share or copy the coordinates) or Google Maps. Decimal degrees with point or comma, degrees/minutes/seconds and N/S/E/W (or German O for east) are understood; short links (`maps.app.goo.gl`) are not.
 
@@ -409,11 +418,11 @@ FieldMesh builds the same way as MeshCore, with [PlatformIO](https://platformio.
 | T1000-E | `t1000e_companion_radio_ble` |
 | Station G2 (FieldMesh Repeater) | `Station_G2_fieldmesh_repeater` |
 | Station G3 ESP32 (FieldMesh Repeater, untested) | `Station_G3_ESP32_fieldmesh_repeater` |
-| Heltec V4 OLED (FieldMesh Repeater, untested) | `heltec_v4_fieldmesh_repeater` |
-| LilyGo T-Echo (untested, display) | `LilyGo_T-Echo_companion_radio_ble` |
+| Heltec V4 (FieldMesh Repeater) | `heltec_v4_fieldmesh_repeater` |
+| LilyGo T-Echo | `LilyGo_T-Echo_companion_radio_ble` |
 | Heltec T114 (untested, display) | `Heltec_t114_companion_radio_ble` |
 | RAK WisMesh Pocket V2 (untested, display) | `RAK_4631_companion_radio_ble` |
-| SenseCAP MeshTracker X1 (untested, no display, RGB LED + vibration) | `MeshTracker_X1_companion_radio_ble` |
+| SenseCAP MeshTracker X1 | `MeshTracker_X1_companion_radio_ble` |
 | RAK WisMesh Tag (untested, no display) | `RAK_WisMesh_Tag_companion_radio_ble` |
 | ThinkNode M3 (untested, no display) | `ThinkNode_M3_companion_radio_ble` |
 | Heltec Mesh Node T1 (untested) | `Heltec_t1_companion_radio_ble` |
@@ -432,7 +441,7 @@ Your own builds show the FieldMesh version **dev**. To put a version on them, se
 PLATFORMIO_BUILD_FLAGS="-DFIELDMESH_VERSION='\"v2.3.0-mybuild\"'" pio run -e ThinkNode_M1_companion_radio_ble
 ```
 
-**Which version is on my device?** The splash screen shows it (M1, L1, Station G2). In the app the firmware version reads like `v1.18.0-fm2.3.0` (MeshCore 1.18.0, FieldMesh 2.3.0) – also on the T1000-E; on the repeater also via `ver` and on the dashboard (Network).
+**Which version is on my device?** The splash screen shows it (devices with a display). In the app the firmware version reads like `v1.18.0-fm2.3.0` (MeshCore 1.18.0, FieldMesh 2.3.0) – also on devices without a display; on the repeater also via `ver` and on the dashboard (Network).
 
 **Untested devices** (marked above; also Wio Tracker L1 E-Ink and L1 1W) build without errors but have not run on hardware yet — build them yourself, no prebuilt firmware. Devices without a display work like the T1000-E. Test reports are very welcome.
 
@@ -440,7 +449,7 @@ The code is written to be portable: hardware-specific pins are in `variant.h`, t
 
 ## Limitations & Known Issues
 
-- Tested on ThinkNode M1, Wio Tracker L1 Pro, T1000-E and Station G2 only
+- Prebuilt firmware only for devices tested on hardware: ThinkNode M1, Wio Tracker L1 Pro, T1000-E and Station G2 (by me), LilyGo T-Echo, MeshTracker X1 and Heltec V4 (by the community)
 - Off-Grid knows EU/UK and US/AU frequencies only — do not use it in other regions (e.g. India, Japan, Korea)
 - SOS needs a channel whose name contains "sos" — for sending and for the alarm
 - The Tracking page shows at most 3 contacts (favourites in the MeshCore app)
@@ -459,7 +468,7 @@ The code is written to be portable: hardware-specific pins are in `variant.h`, t
 <details>
 <summary><strong>Which file do I need?</strong></summary>
 
-None, if you use the [FieldMesh Web Flasher](https://fieldmesh-radio.github.io/FieldMesh/) — it picks the right file. For a manual install: `.zip` for ThinkNode M1, Wio Tracker L1 and T1000-E, `…_full.bin` for the Station G2. The `…_update.bin` is only for updating a running FieldMesh Repeater from its dashboard. See [Supported devices](#supported-devices).
+None, if you use the [FieldMesh Web Flasher](https://fieldmesh-radio.github.io/FieldMesh/) — it picks the right file. For a manual install: `.zip` for the trackers, `…_full.bin` for the repeaters (Station G2, Heltec V4). The `…_update.bin` is only for updating a running FieldMesh Repeater from its dashboard. See [Supported devices](#supported-devices).
 
 </details>
 
@@ -480,7 +489,7 @@ No. Flashing over USB needs Chrome or Edge on a computer (Windows, macOS, Linux)
 <details>
 <summary><strong>The web flasher does not find my device or "Start update mode" does nothing</strong></summary>
 
-Use a USB data cable (some cables only charge) and close other programs that use the port (e.g. a serial monitor or the MeshCore app over USB). If *Start update mode* does nothing, put the device into update (DFU) mode by hand — see the device's manual — then click *Flash*. Station G2: hold the download button, press reset briefly, release, then click *Flash* again.
+Use a USB data cable (some cables only charge) and close other programs that use the port (e.g. a serial monitor or the MeshCore app over USB). If *Start update mode* does nothing, put the device into update (DFU) mode by hand — see the device's manual — then click *Flash*. Station G2: hold the download button, press reset briefly, release, then click *Flash* again (Heltec V4: PRG and RST).
 
 </details>
 
