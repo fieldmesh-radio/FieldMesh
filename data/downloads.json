@@ -1,5 +1,13 @@
 {
  "assets": {
+  "LilyGo_T-Echo_companion_radio_ble_FieldMeshv2.3.0.zip": {
+   "created": "2026-11-25",
+   "tag": "v2.3.0"
+  },
+  "MeshTracker_X1_companion_radio_ble_FieldMeshv2.3.0.zip": {
+   "created": "2026-11-25",
+   "tag": "v2.3.0"
+  },
   "Station_G2_fieldmesh_repeater_FieldMeshv2.1.0_full.bin": {
    "created": "2026-10-27",
    "tag": "v2.1.0"
@@ -78,6 +86,14 @@
   },
   "WioTrackerL1_companion_radio_ble_FieldMeshv2.3.0.zip": {
    "created": "2026-11-23",
+   "tag": "v2.3.0"
+  },
+  "heltec_v4_fieldmesh_repeater_FieldMeshv2.3.0_full.bin": {
+   "created": "2026-11-25",
+   "tag": "v2.3.0"
+  },
+  "heltec_v4_fieldmesh_repeater_FieldMeshv2.3.0_update.bin": {
+   "created": "2026-11-25",
    "tag": "v2.3.0"
   },
   "t1000e_companion_radio_ble_FieldMeshv1.10.0.zip": {
@@ -647,6 +663,39 @@
    "t1000e_companion_radio_ble_FieldMeshv2.1.0.zip": 5,
    "t1000e_companion_radio_ble_FieldMeshv2.2.0.zip": 4,
    "t1000e_companion_radio_ble_FieldMeshv2.3.0.zip": 2
+  },
+  "2026-11-26": {
+   "LilyGo_T-Echo_companion_radio_ble_FieldMeshv2.3.0.zip": 3,
+   "MeshTracker_X1_companion_radio_ble_FieldMeshv2.3.0.zip": 3,
+   "Station_G2_fieldmesh_repeater_FieldMeshv2.1.0_full.bin": 3,
+   "Station_G2_fieldmesh_repeater_FieldMeshv2.1.0_update.bin": 2,
+   "Station_G2_fieldmesh_repeater_FieldMeshv2.2.0_full.bin": 1,
+   "Station_G2_fieldmesh_repeater_FieldMeshv2.2.0_update.bin": 1,
+   "Station_G2_fieldmesh_repeater_FieldMeshv2.3.0_full.bin": 5,
+   "Station_G2_fieldmesh_repeater_FieldMeshv2.3.0_update.bin": 1,
+   "ThinkNode_M1_companion_radio_ble_FieldMeshv1.10.0.zip": 0,
+   "ThinkNode_M1_companion_radio_ble_FieldMeshv1.10.0_US.zip": 1,
+   "ThinkNode_M1_companion_radio_ble_FieldMeshv2.0.0.zip": 0,
+   "ThinkNode_M1_companion_radio_ble_FieldMeshv2.0.0_US.zip": 0,
+   "ThinkNode_M1_companion_radio_ble_FieldMeshv2.1.0.zip": 3,
+   "ThinkNode_M1_companion_radio_ble_FieldMeshv2.2.0.zip": 3,
+   "ThinkNode_M1_companion_radio_ble_FieldMeshv2.3.0.zip": 5,
+   "WioTrackerL1_companion_radio_ble_FieldMeshv1.10.0.zip": 1,
+   "WioTrackerL1_companion_radio_ble_FieldMeshv1.10.0_US.zip": 0,
+   "WioTrackerL1_companion_radio_ble_FieldMeshv2.0.0.zip": 0,
+   "WioTrackerL1_companion_radio_ble_FieldMeshv2.0.0_US.zip": 1,
+   "WioTrackerL1_companion_radio_ble_FieldMeshv2.1.0.zip": 4,
+   "WioTrackerL1_companion_radio_ble_FieldMeshv2.2.0.zip": 8,
+   "WioTrackerL1_companion_radio_ble_FieldMeshv2.3.0.zip": 7,
+   "heltec_v4_fieldmesh_repeater_FieldMeshv2.3.0_full.bin": 3,
+   "heltec_v4_fieldmesh_repeater_FieldMeshv2.3.0_update.bin": 0,
+   "t1000e_companion_radio_ble_FieldMeshv1.10.0.zip": 1,
+   "t1000e_companion_radio_ble_FieldMeshv1.10.0_US.zip": 0,
+   "t1000e_companion_radio_ble_FieldMeshv2.0.0.zip": 1,
+   "t1000e_companion_radio_ble_FieldMeshv2.0.0_US.zip": 0,
+   "t1000e_companion_radio_ble_FieldMeshv2.1.0.zip": 5,
+   "t1000e_companion_radio_ble_FieldMeshv2.2.0.zip": 4,
+   "t1000e_companion_radio_ble_FieldMeshv2.3.0.zip": 5
   }
  }
 }

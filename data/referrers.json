@@ -1057,5 +1057,57 @@
    "referrer": "old.reddit.com",
    "uniques": 1
   }
+ ],
+ "2026-11-26": [
+  {
+   "count": 24,
+   "referrer": "Google",
+   "uniques": 13
+  },
+  {
+   "count": 22,
+   "referrer": "github.com",
+   "uniques": 11
+  },
+  {
+   "count": 13,
+   "referrer": "reddit.com",
+   "uniques": 12
+  },
+  {
+   "count": 13,
+   "referrer": "fieldmesh-radio.github.io",
+   "uniques": 10
+  },
+  {
+   "count": 4,
+   "referrer": "search.brave.com",
+   "uniques": 2
+  },
+  {
+   "count": 2,
+   "referrer": "com.reddit.frontpage",
+   "uniques": 2
+  },
+  {
+   "count": 2,
+   "referrer": "tobiasguertler.de",
+   "uniques": 2
+  },
+  {
+   "count": 2,
+   "referrer": "hamradio.my",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "ecosia.org",
+   "uniques": 1
+  },
+  {
+   "count": 1,
+   "referrer": "old.reddit.com",
+   "uniques": 1
+  }
  ]
 }
